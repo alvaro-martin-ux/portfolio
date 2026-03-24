@@ -1393,8 +1393,11 @@ p.lead-p {
   margin-bottom: 14px;
 }
 </style>
+<link rel="stylesheet" href="case-shared.css">
 </head>
 <body>
+<div id="reading-progress" aria-hidden="true"></div>
+
 
 <!-- NAV -->
 <nav>
@@ -1677,5 +1680,91 @@ p.lead-p {
 })();
 </script>
 
+
+<script>
+/* ─── Case Study Animations ─── */
+(function () {
+  'use strict';
+
+  /* progressive enhancement guard — gates opacity:0 states */
+  document.body.classList.add('cs-anim');
+
+  /* ─── reading progress bar ─── */
+  var bar = document.getElementById('reading-progress');
+  if (bar) {
+    var de = document.documentElement;
+    function updateBar() {
+      var h = de.scrollHeight - de.clientHeight;
+      bar.style.width = (h > 0 ? de.scrollTop / h * 100 : 0).toFixed(1) + '%';
+    }
+    window.addEventListener('scroll', updateBar, { passive: true });
+    updateBar();
+  }
+
+  /* ─── section + card entrances ─── */
+  var ioCard = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      e.target.classList.add('anim-vis');
+      ioCard.unobserve(e.target);
+    });
+  }, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
+
+  /* stagger cards within their grid containers */
+  document.querySelectorAll('.methods-grid, .segments-grid').forEach(function (grid) {
+    grid.querySelectorAll('.method-card, .segment-card').forEach(function (card, i) {
+      card.style.transitionDelay = (i * 80) + 'ms';
+      ioCard.observe(card);
+    });
+  });
+
+  /* non-grid case-sections */
+  document.querySelectorAll('.case-section').forEach(function (el) {
+    ioCard.observe(el);
+  });
+
+  /* ─── list item stagger ─── */
+  var ioList = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      Array.from(e.target.querySelectorAll('li')).forEach(function (li, i) {
+        li.style.transitionDelay = (i * 80) + 'ms';
+      });
+      e.target.classList.add('anim-list-vis');
+      ioList.unobserve(e.target);
+    });
+  }, { threshold: 0.05, rootMargin: '0px 0px -20px 0px' });
+
+  document.querySelectorAll('.resp-list, .impact-list').forEach(function (el) {
+    ioList.observe(el);
+  });
+
+  /* ─── sticky sec-label highlight (scroll-driven, no hover) ─── */
+  var ioLabel = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      var lbl = e.target.querySelector(':scope > .sec-label');
+      if (lbl) lbl.classList.toggle('label-active', e.isIntersecting);
+    });
+  }, { threshold: 0.3 });
+
+  document.querySelectorAll('.case-section').forEach(function (el) {
+    ioLabel.observe(el);
+  });
+
+  /* ─── context-box left-border reveal ─── */
+  var ioCB = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      e.target.classList.add('cb-vis');
+      ioCB.unobserve(e.target);
+    });
+  }, { threshold: 0.2 });
+
+  document.querySelectorAll('.context-box').forEach(function (el) {
+    ioCB.observe(el);
+  });
+
+})();
+</script>
 </body>
 </html>

@@ -1,0 +1,129 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   case-shared.css  —  Shared animation & motion design for case studies
+   Loaded AFTER the inline <style> block so these rules take precedence.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* ── 1. READING PROGRESS BAR ─────────────────────────────────────────── */
+#reading-progress {
+  position: fixed;
+  top: 0; left: 0;
+  width: 0%;
+  height: 2px;
+  background: #E8723A;
+  z-index: 300;
+  pointer-events: none;
+  will-change: width;
+}
+
+/* ── 2. HERO ENTRANCE (CSS keyframes, no JS) ─────────────────────────── */
+@keyframes csHeroFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes csHeroFadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.case-hero-inner .nav-back {
+  animation: csHeroFadeIn 0.4s ease both;
+  animation-delay: 0ms;
+}
+.case-hero-inner .case-tags {
+  animation: csHeroFadeUp 0.45s ease both;
+  animation-delay: 100ms;
+}
+.case-hero-inner .case-title-h1 {
+  animation: csHeroFadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 200ms;
+}
+.case-hero-inner .case-subtitle-p {
+  animation: csHeroFadeIn 0.45s ease both;
+  animation-delay: 350ms;
+}
+
+/* ── 3. SCROLL-TRIGGERED ENTRANCES (gated on body.cs-anim added by JS) ── */
+body.cs-anim .case-section,
+body.cs-anim .method-card,
+body.cs-anim .segment-card {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+body.cs-anim .case-section.anim-vis,
+body.cs-anim .method-card.anim-vis,
+body.cs-anim .segment-card.anim-vis {
+  opacity: 1;
+  transform: none;
+}
+
+body.cs-anim .resp-list li,
+body.cs-anim .impact-list li {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+body.cs-anim .resp-list.anim-list-vis li,
+body.cs-anim .impact-list.anim-list-vis li {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── 4. STICKY SEC-LABEL SCROLL HIGHLIGHT ───────────────────────────── */
+/* Override the inline color: var(--ink) — starts dim, turns full-ink on scroll */
+.sec-label {
+  color: var(--ink-light);
+  transition: color 0.35s ease;
+}
+.sec-label.label-active {
+  color: var(--ink);
+}
+
+/* ── 5. CONTEXT BOX LEFT-BORDER REVEAL ──────────────────────────────── */
+.context-box {
+  position: relative;           /* needed for ::before positioning */
+  border-left-color: transparent !important;  /* hide static orange, animate it */
+}
+.context-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -2px;                   /* sits exactly over the 2px left border slot */
+  width: 2px;
+  height: 100%;
+  background: #E8723A;
+  transform: scaleY(0);
+  transform-origin: top center;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.context-box.cb-vis::before {
+  transform: scaleY(1);
+}
+
+/* ── 6. SMOOTH SCROLL OFFSET for in-page anchors ────────────────────── */
+[id] {
+  scroll-margin-top: 80px;
+}
+
+/* ── 7. REDUCED MOTION OVERRIDE ─────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  /* ensure content is always visible even without transitions */
+  body.cs-anim .case-section,
+  body.cs-anim .method-card,
+  body.cs-anim .segment-card,
+  body.cs-anim .resp-list li,
+  body.cs-anim .impact-list li {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .context-box {
+    border-left-color: #E8723A !important;
+  }
+  .context-box::before {
+    transform: scaleY(1) !important;
+  }
+}

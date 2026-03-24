@@ -1310,7 +1310,7 @@ p.body-p {
   /* Force inline-style grids (MoSCoW 4-col, HEART 5-col) to wrap */
   .segments-grid[style*="repeat(4"] { grid-template-columns: repeat(2, 1fr) !important; }
   .segments-grid[style*="repeat(5"] { grid-template-columns: repeat(3, 1fr) !important; }
-  .method-cards-grid[style*="repeat(3"] { grid-template-columns: repeat(2, 1fr) !important; }
+  .methods-grid { grid-template-columns: repeat(2, 1fr) !important; }
 }
 
 @media (max-width: 640px) {
@@ -1321,7 +1321,7 @@ p.body-p {
   .methods-grid { grid-template-columns: 1fr; }
   .segments-grid { grid-template-columns: 1fr !important; }
   .opp-grid { grid-template-columns: 1fr; }
-  .method-cards-grid { grid-template-columns: 1fr !important; }
+
   .case-footer { padding: 20px; flex-direction: column; gap: 10px; }
 }
 
@@ -1430,8 +1430,11 @@ p.lead-p {
   background: #1A1A2E;
 }
 </style>
+<link rel="stylesheet" href="case-shared.css">
 </head>
 <body>
+<div id="reading-progress" aria-hidden="true"></div>
+
 
 <div id="cursorDot" class="cursor"></div>
 <div id="cursorRing" class="cursor-ring"></div>
@@ -1714,7 +1717,7 @@ p.lead-p {
       <li>Initial naming ideas (aligned with ASO strategy)</li>
     </ul>
     <p class="body-p">Based on the workshop outcomes, each team created its own specific guidelines to ensure coherence:</p>
-    <div class="method-cards-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:20px 0;">
+    <div class="methods-grid">
       <div class="method-card">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200" style="width:100%;display:block;border-radius:8px;margin-bottom:16px;">
   <defs>
@@ -1729,14 +1732,19 @@ p.lead-p {
   </defs>
   <rect width="480" height="200" fill="url(#bg1)" rx="8"/>
   <ellipse cx="240" cy="100" rx="100" ry="80" fill="url(#glow1)"/>
-  <!-- Text lines icon -->
   <rect x="150" y="62" width="180" height="20" rx="10" fill="white" opacity="0.9"/>
   <rect x="160" y="92" width="160" height="20" rx="10" fill="white" opacity="0.9"/>
   <rect x="170" y="122" width="140" height="20" rx="10" fill="white" opacity="0.9"/>
   <rect x="195" y="152" width="90" height="16" rx="8" fill="white" opacity="0.7"/>
 </svg>
-        <div class="method-name">Content</div>
-        <ul class="method-items"><li>Content Guidelines</li></ul>
+        <div class="method-name">Content Guidelines</div>
+        <ul class="method-items">
+          <li>Tone of voice definition</li>
+          <li>Writing style and vocabulary</li>
+          <li>Naming conventions</li>
+          <li>Onboarding and in-app microcopy</li>
+          <li>ASO text (title, subtitle, description)</li>
+        </ul>
       </div>
       <div class="method-card">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200" style="width:100%;display:block;border-radius:8px;margin-bottom:16px;">
@@ -1753,15 +1761,12 @@ p.lead-p {
   </defs>
   <rect width="480" height="200" fill="url(#bg2)" rx="8"/>
   <ellipse cx="240" cy="105" rx="90" ry="70" fill="url(#glow2)"/>
-  <!-- Color swatches row -->
   <rect x="148" y="70" width="44" height="44" rx="8" fill="white" opacity="0.85"/>
   <rect x="202" y="70" width="44" height="44" rx="8" fill="white" opacity="0.6"/>
   <rect x="256" y="70" width="44" height="44" rx="8" fill="white" opacity="0.4"/>
   <rect x="310" y="70" width="22" height="44" rx="6" fill="white" opacity="0.25"/>
-  <!-- Type specimen -->
   <rect x="148" y="126" width="120" height="14" rx="7" fill="white" opacity="0.8"/>
   <rect x="148" y="148" width="80" height="10" rx="5" fill="white" opacity="0.55"/>
-  <!-- Grid dots -->
   <circle cx="296" cy="133" r="5" fill="white" opacity="0.75"/>
   <circle cx="316" cy="133" r="5" fill="white" opacity="0.55"/>
   <circle cx="336" cy="133" r="5" fill="white" opacity="0.35"/>
@@ -1769,8 +1774,14 @@ p.lead-p {
   <circle cx="316" cy="153" r="5" fill="white" opacity="0.35"/>
   <circle cx="336" cy="153" r="3" fill="white" opacity="0.2"/>
 </svg>
-        <div class="method-name">UX/UI</div>
-        <ul class="method-items"><li>Style Guide</li></ul>
+        <div class="method-name">Style Guide (UX/UI)</div>
+        <ul class="method-items">
+          <li>Typography system and scale</li>
+          <li>Color palette and usage rules</li>
+          <li>Component library patterns</li>
+          <li>Spacing, grid, and layout system</li>
+          <li>Iconography and illustration style</li>
+        </ul>
       </div>
       <div class="method-card">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200" style="width:100%;display:block;border-radius:8px;margin-bottom:16px;">
@@ -1787,24 +1798,26 @@ p.lead-p {
   </defs>
   <rect width="480" height="200" fill="url(#bg3)" rx="8"/>
   <ellipse cx="240" cy="100" rx="95" ry="75" fill="url(#glow3)"/>
-  <!-- Large B letterform -->
   <text x="175" y="148" font-family="Georgia, serif" font-size="110" font-weight="700" fill="white" opacity="0.85">B</text>
-  <!-- Star / asterisk accent -->
   <g transform="translate(330,58)" opacity="0.7">
     <line x1="0" y1="-14" x2="0" y2="14" stroke="white" stroke-width="3" stroke-linecap="round"/>
     <line x1="-14" y1="0" x2="14" y2="0" stroke="white" stroke-width="3" stroke-linecap="round"/>
     <line x1="-10" y1="-10" x2="10" y2="10" stroke="white" stroke-width="3" stroke-linecap="round"/>
     <line x1="10" y1="-10" x2="-10" y2="10" stroke="white" stroke-width="3" stroke-linecap="round"/>
   </g>
-  <!-- Diamond accent -->
   <polygon points="355,120 370,135 355,150 340,135" fill="none" stroke="white" stroke-width="2.5" opacity="0.55"/>
-  <!-- Small bar chart accent (left) -->
   <rect x="137" y="110" width="10" height="35" rx="3" fill="white" opacity="0.5"/>
   <rect x="152" y="98" width="10" height="47" rx="3" fill="white" opacity="0.65"/>
   <rect x="122" y="120" width="10" height="25" rx="3" fill="white" opacity="0.35"/>
 </svg>
-        <div class="method-name">Branding</div>
-        <ul class="method-items"><li>Brandbook</li></ul>
+        <div class="method-name">Brandbook</div>
+        <ul class="method-items">
+          <li>Brand values and personality traits</li>
+          <li>Logo usage and variations</li>
+          <li>Color identity and combinations</li>
+          <li>Visual language and mood board</li>
+          <li>App store visual assets</li>
+        </ul>
       </div>
     </div>
     <p class="body-p">These guidelines not only structured internal work, but also served as a reference for other involved teams — Customer Service, Marketing, ASO — ensuring that the app maintained a <strong>strong and consistent identity over time</strong>.</p>
@@ -1939,5 +1952,91 @@ function animRing() { rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12; ring.style
 animRing();
 </script>
 
+
+<script>
+/* ─── Case Study Animations ─── */
+(function () {
+  'use strict';
+
+  /* progressive enhancement guard — gates opacity:0 states */
+  document.body.classList.add('cs-anim');
+
+  /* ─── reading progress bar ─── */
+  var bar = document.getElementById('reading-progress');
+  if (bar) {
+    var de = document.documentElement;
+    function updateBar() {
+      var h = de.scrollHeight - de.clientHeight;
+      bar.style.width = (h > 0 ? de.scrollTop / h * 100 : 0).toFixed(1) + '%';
+    }
+    window.addEventListener('scroll', updateBar, { passive: true });
+    updateBar();
+  }
+
+  /* ─── section + card entrances ─── */
+  var ioCard = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      e.target.classList.add('anim-vis');
+      ioCard.unobserve(e.target);
+    });
+  }, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
+
+  /* stagger cards within their grid containers */
+  document.querySelectorAll('.methods-grid, .segments-grid').forEach(function (grid) {
+    grid.querySelectorAll('.method-card, .segment-card').forEach(function (card, i) {
+      card.style.transitionDelay = (i * 80) + 'ms';
+      ioCard.observe(card);
+    });
+  });
+
+  /* non-grid case-sections */
+  document.querySelectorAll('.case-section').forEach(function (el) {
+    ioCard.observe(el);
+  });
+
+  /* ─── list item stagger ─── */
+  var ioList = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      Array.from(e.target.querySelectorAll('li')).forEach(function (li, i) {
+        li.style.transitionDelay = (i * 80) + 'ms';
+      });
+      e.target.classList.add('anim-list-vis');
+      ioList.unobserve(e.target);
+    });
+  }, { threshold: 0.05, rootMargin: '0px 0px -20px 0px' });
+
+  document.querySelectorAll('.resp-list, .impact-list').forEach(function (el) {
+    ioList.observe(el);
+  });
+
+  /* ─── sticky sec-label highlight (scroll-driven, no hover) ─── */
+  var ioLabel = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      var lbl = e.target.querySelector(':scope > .sec-label');
+      if (lbl) lbl.classList.toggle('label-active', e.isIntersecting);
+    });
+  }, { threshold: 0.3 });
+
+  document.querySelectorAll('.case-section').forEach(function (el) {
+    ioLabel.observe(el);
+  });
+
+  /* ─── context-box left-border reveal ─── */
+  var ioCB = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      e.target.classList.add('cb-vis');
+      ioCB.unobserve(e.target);
+    });
+  }, { threshold: 0.2 });
+
+  document.querySelectorAll('.context-box').forEach(function (el) {
+    ioCB.observe(el);
+  });
+
+})();
+</script>
 </body>
 </html>

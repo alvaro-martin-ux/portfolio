@@ -147,7 +147,10 @@ nav {
   transition: color 0.2s;
 }
 .nav-social a:hover { color: var(--ink); }
-.nav-social a::after { display: none !important; content: none !important; }
+.nav-social::before,
+.nav-social::after,
+.nav-social a::before,
+.nav-social a::after  { display: none !important; content: '' !important; }
 
 /* ─── HERO ─── */
 .hero {
@@ -157,25 +160,79 @@ nav {
   flex-direction: column;
   justify-content: space-between;
   position: relative;
+  overflow: hidden;
+}
+
+@keyframes heroGlowDrift {
+  0%,100% { transform: translate(0,0) scale(1); opacity: 0.75; }
+  25%      { transform: translate(-3%,5%) scale(1.09); opacity: 0.9; }
+  50%      { transform: translate(4%,-3%) scale(0.91); opacity: 0.7; }
+  75%      { transform: translate(-2%,2%) scale(1.05); opacity: 0.82; }
+}
+@keyframes heroGlowDrift2 {
+  0%,100% { transform: translate(0,0) scale(1); opacity: 0.6; }
+  33%     { transform: translate(5%,-4%) scale(1.07); opacity: 0.75; }
+  66%     { transform: translate(-4%,3%) scale(0.93); opacity: 0.55; }
 }
 
 .hero::before {
   content: '';
   position: absolute;
-  top: 0%;
+  top: -5%;
   right: -15%;
-  width: 620px;
-  height: 620px;
+  width: 680px;
+  height: 680px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,140,60,0.65) 0%, rgba(255,80,50,0.45) 40%, transparent 70%);
-  filter: blur(52px);
+  background: radial-gradient(circle, rgba(255,140,60,0.7) 0%, rgba(255,80,50,0.48) 40%, transparent 70%);
+  filter: blur(56px);
+  pointer-events: none;
+  z-index: 0;
+  animation: heroGlowDrift 14s ease-in-out infinite;
+  transform-origin: center center;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: -8%;
+  left: -8%;
+  width: 480px;
+  height: 480px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,80,50,0.35) 0%, rgba(255,140,60,0.2) 45%, transparent 70%);
+  filter: blur(64px);
+  pointer-events: none;
+  z-index: 0;
+  animation: heroGlowDrift2 18s ease-in-out infinite;
+  transform-origin: center center;
+}
+
+/* Hero graph canvas */
+#hero-graph-canvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
   z-index: 0;
 }
 
+/* Tilt on headline */
+.hero-headline h1 {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .hero::before,
+  .hero::after { animation: none !important; }
+  #hero-canvas { display: none !important; }
+  .hero-headline h1 { transition: none !important; transform: none !important; }
+}
+
 .hero-meta {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   align-items: start;
@@ -194,16 +251,18 @@ nav {
 
 .hero-stamps {
   display: flex;
+  flex-direction: row;
   gap: 24px;
-  font-size: 12px;
-  color: var(--ink-mid);
+  margin-top: 16px;
+  font-size: 13px;
   font-weight: 400;
-  letter-spacing: 0.04em;
+  color: var(--ink-light);
+  letter-spacing: 0.08em;
 }
 
 .hero-headline {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   padding: 0 40px 60px;
 }
 
@@ -458,9 +517,7 @@ section { padding: 80px 40px; }
 .proc-cell {
   background: var(--white);
   padding: 28px 20px;
-  transition: background 0.2s;
 }
-.proc-cell:hover { background: var(--bg); }
 
 .proc-n {
   font-family: var(--ff-display);
@@ -649,9 +706,7 @@ section { padding: 80px 40px; }
 .stat-cell {
   background: var(--ink);
   padding: 24px 20px;
-  transition: background 0.2s;
 }
-.stat-cell:hover { background: rgba(242,241,239,0.03); }
 
 .stat-n {
   font-family: var(--ff-display);
@@ -981,6 +1036,208 @@ footer p { font-size: 11px; font-weight: 300; color: var(--ink-light); letter-sp
   filter: grayscale(100%);
   border: 2px solid rgba(242,241,239,0.1);
 }
+
+/* ═══ ENHANCEMENT LAYER ════════════════════════════════════════════════════ */
+
+/* ─── Section headers: fade-in + animated accent line ─────────────────── */
+.section-header {
+  position: relative;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.section-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0;
+  height: 1px; width: 0;
+  background: linear-gradient(90deg, var(--ink) 0%, rgba(255,140,60,0.55) 60%, transparent 100%);
+  transition: width 0.9s cubic-bezier(0.4,0,0.2,1) 0.15s;
+}
+.section-header.sh-vis {
+  opacity: 1;
+  transform: none;
+}
+.section-header.sh-vis::after {
+  width: 100%;
+}
+
+/* ─── WORK: ghost index numbers ─────────────────────────────────────────── */
+.case-item {
+  position: relative;
+  overflow: hidden;
+}
+.case-item::before {
+  content: attr(data-num);
+  position: absolute;
+  right: 130px; bottom: -32px;
+  font-family: var(--ff-display);
+  font-size: 150px; font-weight: 800;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(17,17,16,0.04);
+  line-height: 1; pointer-events: none; z-index: 0;
+  letter-spacing: -0.04em; user-select: none;
+  transition: -webkit-text-stroke-color 0.4s ease,
+              transform 0.55s cubic-bezier(0.4,0,0.2,1);
+}
+.case-item:hover::before {
+  -webkit-text-stroke-color: rgba(17,17,16,0.09);
+  transform: translateY(-10px);
+}
+
+/* ─── WORK: hover elevation ─────────────────────────────────────────────── */
+.case-item {
+  transition: background 0.25s, box-shadow 0.35s;
+}
+.case-item:hover {
+  box-shadow: 0 6px 36px rgba(17,17,16,0.07);
+}
+
+/* ─── WORK: entrance — fade + slide + scale ─────────────────────────────── */
+body.enh .case-item {
+  opacity: 0;
+  transform: translateY(60px) scale(0.96);
+  transition: background 0.25s, box-shadow 0.35s,
+              opacity 0.7s cubic-bezier(0.16,1,0.3,1),
+              transform 0.7s cubic-bezier(0.16,1,0.3,1);
+}
+body.enh .case-item.vis {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* ─── WORK: decorative line that draws before each card ─────────────────── */
+body.enh .case-item::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 0; height: 1px;
+  background: rgba(17,17,16,0.12);
+  pointer-events: none;
+  z-index: 10;
+}
+body.enh .case-item.line-vis::after {
+  width: 100%;
+  transition: width 0.3s ease;
+}
+body.enh .case-item.vis::after {
+  width: 100%;
+  opacity: 0;
+  transition: opacity 0.45s ease 0.15s;
+}
+
+/* ─── WORK: case-visual clip-path curtain + scale ────────────────────────── */
+body.enh .case-visual {
+  clip-path: inset(100% 0 0 0);
+  transform: scale(1.05);
+  transform-origin: center bottom;
+  transition: clip-path 0.7s cubic-bezier(0.16,1,0.3,1) 0.18s,
+              transform  0.7s cubic-bezier(0.16,1,0.3,1) 0.18s;
+}
+body.enh .case-item.vis .case-visual {
+  clip-path: inset(0% 0 0 0);
+  transform: scale(1);
+}
+
+/* ─── CV: experience rows slide-in from left ────────────────────────────── */
+body.enh .exp-row {
+  opacity: 0;
+  transform: translateX(-16px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+body.enh .exp-row.vis {
+  opacity: 1;
+  transform: none;
+}
+
+/* ─── CV: proportional duration bar ────────────────────────────────────── */
+.exp-dur {
+  display: block;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255,140,60,0.7) 0%, rgba(255,80,50,0.45) 100%);
+  border-radius: 2px;
+  margin-top: 10px;
+  max-width: 180px;
+  width: 0;
+  transition: width 0.9s cubic-bezier(0.4,0,0.2,1) 0.3s;
+}
+body.enh .exp-row.vis .exp-dur {
+  width: var(--dw, 40%);
+}
+
+/* ─── PROCESS: cascade entrance ─────────────────────────────────────────── */
+body.enh .proc-cell {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.4s ease, transform 0.4s ease, background 0.2s;
+}
+body.enh .proc-cell.vis {
+  opacity: 1;
+  transform: none;
+}
+
+
+/* ─── TOOLS: marquee edge fade ──────────────────────────────────────────── */
+.marquee-wrap {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 7%, #000 93%, transparent 100%);
+  mask-image:         linear-gradient(90deg, transparent 0%, #000 7%, #000 93%, transparent 100%);
+}
+
+/* ─── TOOLS: method & skill tag hover ───────────────────────────────────── */
+
+
+
+/* ─── CONTACT: "Let's Talk" reveal ─────────────────────────────────────── */
+body.enh .contact-h {
+  opacity: 0;
+  transform: translateY(36px);
+  transition: opacity 0.8s ease, transform 0.85s cubic-bezier(0.16,1,0.3,1);
+}
+body.enh .contact-h.vis {
+  opacity: 1;
+  transform: none;
+}
+
+/* ─── CONTACT: link top-accent draw on hover ────────────────────────────── */
+.c-link {
+  position: relative;
+}
+.c-link::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 0; height: 2px;
+  background: linear-gradient(90deg, rgba(255,140,60,0.9), rgba(255,80,50,0.7));
+  transition: width 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.c-link:hover::after {
+  width: 100%;
+}
+
+/* ─── prefers-reduced-motion overrides ──────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .section-header {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .section-header::after {
+    width: 100% !important;
+    transition: none !important;
+  }
+  body.enh .case-item,
+  body.enh .exp-row,
+  body.enh .proc-cell,
+  body.enh .contact-h {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: background 0.25s, box-shadow 0.35s !important;
+  }
+  .exp-dur {
+    width: var(--dw, 40%) !important;
+    transition: none !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -1056,15 +1313,16 @@ footer p { font-size: 11px; font-weight: 300; color: var(--ink-light); letter-sp
 
 <!-- HERO -->
 <section class="hero" id="home">
+  <canvas id="hero-graph-canvas" aria-hidden="true"></canvas>
   <div class="hero-meta h1">
     <p class="hero-note">UX Researcher & Product Designer with 10+ years building data-informed products across web & mobile ecosystems. NDA applies — visuals adapted or omitted.</p>
+  </div>
+  <div class="hero-headline h2">
+    <h1>Product<br>Designer &amp;<br>UX Researcher</h1>
     <div class="hero-stamps">
       <span>Portfolio 2026</span>
       <span>Barcelona</span>
     </div>
-  </div>
-  <div class="hero-headline h2">
-    <h1>Product<br>Designer &amp;<br>UX Researcher</h1>
   </div>
 </section>
 
@@ -1408,8 +1666,8 @@ footer p { font-size: 11px; font-weight: 300; color: var(--ink-light); letter-sp
     <div>
       <p class="contact-sub">Open to new opportunities, collaborations, and conversations about research, design, and product strategy.</p>
       <div class="contact-links">
-        <a href="/cdn-cgi/l/email-protection#b7d6db99dad6c599c7dbd2f7d0dad6dedb99d4d8da" class="c-link">
-          <span class="__cf_email__" data-cfemail="7918155714180b5709151c391e14181015571a1614">[email&#160;protected]</span>
+        <a href="mailto:al.mar.ple@gmail.com" class="c-link">
+          <span>al.mar.ple@gmail.com</span>
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
         <a href="https://linkedin.com/in/alvaromartinple" target="_blank" class="c-link">
@@ -1426,6 +1684,433 @@ footer p { font-size: 11px; font-weight: 300; color: var(--ink-light); letter-sp
   <p>© 2025 Álvaro Martín · Barcelona</p>
   <p>UX Researcher & Product Designer</p>
 </footer>
+
+<!-- Portfolio Enhancements -->
+<script>
+(function () {
+  'use strict';
+
+  /* ── Enable animation state ────────────────────────────────────────────── */
+  document.body.classList.add('enh');
+
+  /* ── Staggered IntersectionObserver ────────────────────────────────────── */
+  function observe(selector, addCls, staggerMs, ioOpts) {
+    var els = Array.from(document.querySelectorAll(selector));
+    if (!els.length) return;
+    var opts = { threshold: 0.12, rootMargin: '0px 0px -20px 0px' };
+    if (ioOpts) { for (var k in ioOpts) opts[k] = ioOpts[k]; }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        var idx = els.indexOf(e.target);
+        if (staggerMs) e.target.style.transitionDelay = (idx * staggerMs) + 'ms';
+        e.target.classList.add(addCls);
+        io.unobserve(e.target);
+      });
+    }, opts);
+    els.forEach(function (el) { io.observe(el); });
+  }
+
+  /* ── Section headers: fade + animated line ─────────────────────────────── */
+  document.querySelectorAll('.section-header').forEach(function (el) {
+    var io = new IntersectionObserver(function (entries) {
+      if (!entries[0].isIntersecting) return;
+      entries[0].target.classList.add('sh-vis');
+      io.disconnect();
+    }, { threshold: 0.25 });
+    io.observe(el);
+  });
+
+  /* ── WORK: ghost numbers + sophisticated entrance ───────────────────────── */
+  var workCards = Array.from(document.querySelectorAll('.case-item'));
+  workCards.forEach(function (item) {
+    var numEl = item.querySelector('.case-num');
+    if (numEl) item.dataset.num = numEl.textContent.trim();
+  });
+
+  var wCount = 0;
+  var ioWork = new IntersectionObserver(function (entries) {
+    /* sort entries by DOM order for consistent cascade */
+    var sorted = entries
+      .filter(function (e) { return e.isIntersecting; })
+      .sort(function (a, b) { return workCards.indexOf(a.target) - workCards.indexOf(b.target); });
+
+    sorted.forEach(function (e) {
+      ioWork.unobserve(e.target);
+      var item    = e.target;
+      var delay   = wCount * 150;   /* 150ms stagger */
+      wCount++;
+
+      /* step 1: draw line */
+      setTimeout(function () { item.classList.add('line-vis'); }, delay);
+      /* step 2: reveal card 300ms after line starts */
+      setTimeout(function () { item.classList.add('vis'); },      delay + 300);
+    });
+  }, { threshold: 0.05, rootMargin: '0px 0px -20px 0px' });
+
+  workCards.forEach(function (el) { ioWork.observe(el); });
+
+  /* ── CV: proportional duration bars ────────────────────────────────────── */
+  var MAX_MO = 61; /* longest role: 5 yrs 1 mo */
+  document.querySelectorAll('.exp-row').forEach(function (row) {
+    var small = row.querySelector('.exp-period small');
+    if (!small) return;
+    var txt  = small.textContent || '';
+    var mo   = 0;
+    var yrm  = txt.match(/(\d+)\s*yr/i); if (yrm) mo += parseInt(yrm[1]) * 12;
+    var mom  = txt.match(/(\d+)\s*mo/i); if (mom) mo += parseInt(mom[1]);
+    if (!mo) { var nm = txt.match(/\d+/); if (nm) mo = parseInt(nm[0]); }
+    var bar  = document.createElement('span');
+    bar.className = 'exp-dur';
+    bar.style.setProperty('--dw', Math.round(mo / MAX_MO * 100) + '%');
+    row.querySelector('.exp-period').appendChild(bar);
+  });
+  observe('.exp-row', 'vis', 90);
+
+  /* ── PROCESS: cascade ──────────────────────────────────────────────────── */
+  observe('.proc-cell', 'vis', 55);
+
+  /* ── CONTACT: "Let's Talk" reveal ──────────────────────────────────────── */
+  var contactH = document.querySelector('.contact-h');
+  if (contactH) {
+    var ioC = new IntersectionObserver(function (entries) {
+      if (!entries[0].isIntersecting) return;
+      entries[0].target.classList.add('vis');
+      ioC.disconnect();
+    }, { threshold: 0.3 });
+    ioC.observe(contactH);
+  }
+
+})();
+</script>
+
+<!-- Hero: Node Graph -->
+<script>
+(function () {
+  'use strict';
+
+  /* ─── guards ─────────────────────────────────────────────────────────── */
+  var hero   = document.querySelector('.hero');
+  var canvas = document.getElementById('hero-graph-canvas');
+  if (!hero || !canvas) return;
+  if (window.innerWidth < 768) { canvas.style.display = 'none'; return; }
+
+  var ctx     = canvas.getContext('2d');
+  var dpr     = Math.min(window.devicePixelRatio || 1, 3);
+  var W = 0, H = 0;
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ─── label constants ─────────────────────────────────────────────────── */
+  var LABEL_COLOR          = '#111110';
+  var LABEL_OPACITY_SMALL  = 0.28;
+  var LABEL_OPACITY_MEDIUM = 0.32;
+  var LABEL_OPACITY_LARGE  = 0.70;
+  var LABEL_SIZE_SMALL     = 10;
+  var LABEL_SIZE_MEDIUM    = 11;
+  var LABEL_SIZE_LARGE     = 12;
+  var EXCL_LEFT            = 500; /* px — no nodes left of this x */
+  var EXCL_MARGIN          = 80;  /* soft-push starts this many px before the wall */
+
+  /* ─── node definitions ───────────────────────────────────────────────── */
+  var NODE_DEF = [
+    { label: 'UX Research',    r: 8, cat: 'large'  },
+    { label: 'Product Design', r: 8, cat: 'large'  },
+    { label: 'Strategy',       r: 8, cat: 'large'  },
+    { label: 'Barcelona',      r: 8, cat: 'large'  },
+    { label: 'Figma',          r: 5, cat: 'medium' },
+    { label: 'Dovetail',       r: 5, cat: 'medium' },
+    { label: 'Amplitude',      r: 5, cat: 'medium' },
+    { label: 'Hotjar',         r: 5, cat: 'medium' },
+    { label: 'Maze',           r: 5, cat: 'medium' },
+    { label: 'Empathy',        r: 3, cat: 'small'  },
+    { label: 'Insights',       r: 3, cat: 'small'  },
+    { label: 'Data',           r: 3, cat: 'small'  },
+    { label: 'Patterns',       r: 3, cat: 'small'  },
+    { label: '13 yrs',         r: 3, cat: 'small'  },
+    { label: 'JTBD',           r: 3, cat: 'small'  },
+    { label: 'Discovery',      r: 3, cat: 'small'  },
+    { label: 'Testing',        r: 3, cat: 'small'  }
+  ];
+
+  var nodes = [];
+
+  /* ─── rounded rect helper ────────────────────────────────────────────── */
+  function rrect(cx, x, y, w, h, r) {
+    cx.beginPath();
+    cx.moveTo(x + r, y);
+    cx.lineTo(x + w - r, y);
+    cx.quadraticCurveTo(x + w, y, x + w, y + r);
+    cx.lineTo(x + w, y + h - r);
+    cx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    cx.lineTo(x + r, y + h);
+    cx.quadraticCurveTo(x, y + h, x, y + h - r);
+    cx.lineTo(x, y + r);
+    cx.quadraticCurveTo(x, y, x + r, y);
+    cx.closePath();
+  }
+
+  /* ─── init ───────────────────────────────────────────────────────────── */
+  function initNodes() {
+    nodes = NODE_DEF.map(function (d) {
+      var baseSpeed = d.cat === 'large' ? 0.14 : d.cat === 'medium' ? 0.20 : 0.28;
+      var spd = baseSpeed + Math.random() * 0.12;
+      var ang = Math.random() * Math.PI * 2;
+      return {
+        label:      d.label,
+        r:          d.r,
+        cat:        d.cat,
+        x:          EXCL_LEFT + d.r + 40 + Math.random() * Math.max(40, W - EXCL_LEFT - d.r * 2 - 120),
+        y:          d.r + 80 + Math.random() * (H - d.r * 2 - 160),
+        vx:         Math.cos(ang) * spd,
+        vy:         Math.sin(ang) * spd,
+        ang:        ang,
+        wobFreq:    0.18 + Math.random() * 0.35,
+        phase:      Math.random() * Math.PI * 2,
+        baseSpd:    spd,
+        hScale:     1,
+        hTarget:    1,
+        hovering:   false
+      };
+    });
+  }
+
+  function resize() {
+    W = hero.offsetWidth;
+    H = hero.offsetHeight;
+    canvas.width  = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);   /* reset + re-apply scale */
+    if (nodes.length === 0) { initNodes(); return; }
+    nodes.forEach(function (n) {
+      n.x = Math.max(EXCL_LEFT + EXCL_MARGIN, Math.min(W - n.r - 10, n.x));
+      n.y = Math.max(n.r + 10, Math.min(H - n.r - 10, n.y));
+    });
+  }
+
+  /* ─── mouse ──────────────────────────────────────────────────────────── */
+  var mouse = { x: -9999, y: -9999, on: false };
+
+  document.addEventListener('mousemove', function (e) {
+    var rect = hero.getBoundingClientRect();
+    mouse.x  = e.clientX - rect.left;
+    mouse.y  = e.clientY - rect.top;
+    mouse.on = true;
+  });
+  hero.addEventListener('mouseleave', function () {
+    mouse.on = false;
+    mouse.x  = -9999;
+    mouse.y  = -9999;
+  });
+
+  /* ─── animation ──────────────────────────────────────────────────────── */
+  var rafId   = null;
+  var paused  = false;
+  var prevT   = 0;
+
+  var io = new IntersectionObserver(function (entries) {
+    paused = !entries[0].isIntersecting;
+  }, { threshold: 0 });
+  io.observe(hero);
+
+  function frame(ts) {
+    rafId = requestAnimationFrame(frame);
+    if (paused) return;
+
+    var dt = Math.min(ts - prevT, 50);
+    prevT  = ts;
+    var t  = ts * 0.001;
+
+    ctx.clearRect(0, 0, W, H);
+
+    /* left veil — soft gradient to improve text readability */
+    var veil = ctx.createLinearGradient(0, 0, EXCL_LEFT + EXCL_MARGIN, 0);
+    veil.addColorStop(0,   'rgba(252,250,247,0.92)');
+    veil.addColorStop(0.5, 'rgba(252,250,247,0.55)');
+    veil.addColorStop(1,   'rgba(252,250,247,0)');
+    ctx.fillStyle = veil;
+    ctx.fillRect(0, 0, EXCL_LEFT + EXCL_MARGIN, H);
+
+    /* update positions */
+    if (!reduced) {
+      nodes.forEach(function (n) {
+        /* organic wobble */
+        n.ang += 0.004 + Math.sin(t * n.wobFreq + n.phase) * 0.002;
+        n.vx  += Math.cos(n.ang) * n.baseSpd * 0.025;
+        n.vy  += Math.sin(n.ang) * n.baseSpd * 0.025;
+
+        /* mouse repulsion */
+        if (mouse.on) {
+          var dx = n.x - mouse.x, dy = n.y - mouse.y;
+          var d2 = dx * dx + dy * dy;
+          if (d2 < 14400 && d2 > 0.01) {       /* 120² */
+            var d = Math.sqrt(d2);
+            var f = (1 - d / 120) * 2.4;
+            n.vx += (dx / d) * f;
+            n.vy += (dy / d) * f;
+          }
+        }
+
+        /* damping */
+        n.vx *= 0.92;
+        n.vy *= 0.92;
+
+        /* speed cap */
+        var spd2 = Math.sqrt(n.vx * n.vx + n.vy * n.vy);
+        var maxV = n.cat === 'large' ? 1.3 : n.cat === 'medium' ? 1.9 : 2.6;
+        if (spd2 > maxV) { n.vx = (n.vx / spd2) * maxV; n.vy = (n.vy / spd2) * maxV; }
+
+        n.x += n.vx;
+        n.y += n.vy;
+
+        /* soft boundary — left wall is EXCL_LEFT */
+        var pad = n.r + 24;
+        var leftWall = EXCL_LEFT + EXCL_MARGIN;
+        if (n.x < leftWall)  n.vx += (leftWall - n.x) * 0.10;
+        if (n.x > W - pad)   n.vx -= (n.x - (W - pad)) * 0.07;
+        if (n.y < pad)       n.vy += (pad - n.y) * 0.07;
+        if (n.y > H - pad)   n.vy -= (n.y - (H - pad)) * 0.07;
+      });
+    }
+
+    /* hover detection + smooth scale lerp */
+    nodes.forEach(function (n) {
+      var dx = n.x - mouse.x, dy = n.y - mouse.y;
+      var hr = n.r * 1.5 + 5;
+      n.hovering = mouse.on && (dx * dx + dy * dy < hr * hr);
+      n.hTarget  = n.hovering ? 1.4 : 1.0;
+      n.hScale  += (n.hTarget - n.hScale) * 0.14;
+    });
+
+    /* ── edges ──────────────────────────────────────────────────────────── */
+    var CONN_DIST = 180;
+    for (var i = 0; i < nodes.length; i++) {
+      for (var j = i + 1; j < nodes.length; j++) {
+        var a = nodes[i], b = nodes[j];
+        var ex = a.x - b.x, ey = a.y - b.y;
+        var ed = Math.sqrt(ex * ex + ey * ey);
+        if (ed > CONN_DIST) continue;
+
+        var baseAlpha = (1 - ed / CONN_DIST) * 0.08;
+
+        /* midpoint mouse boost */
+        var mx2 = (a.x + b.x) * 0.5, my2 = (a.y + b.y) * 0.5;
+        var mdx = mx2 - mouse.x, mdy = my2 - mouse.y;
+        var md  = Math.sqrt(mdx * mdx + mdy * mdy);
+        var mBoost = (mouse.on && md < 120) ? (1 - md / 120) * 0.18 : 0;
+
+        /* node-hover boost */
+        var hBoost = (a.hovering || b.hovering) ? 0.14 : 0;
+
+        var alpha = Math.min(baseAlpha + mBoost + hBoost, 0.28);
+
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.strokeStyle = 'rgba(17,17,16,' + alpha.toFixed(3) + ')';
+        ctx.lineWidth   = alpha > 0.12 ? 1.2 : 1;
+        ctx.stroke();
+      }
+    }
+
+    /* ── nodes ──────────────────────────────────────────────────────────── */
+    nodes.forEach(function (n) {
+      var r = n.r * n.hScale;
+      ctx.save();
+      ctx.translate(n.x, n.y);
+
+      if (n.cat === 'large') {
+        var grd = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
+        var op  = n.hovering ? 0.72 : 0.50;
+        grd.addColorStop(0, 'rgba(255,140,60,' + op + ')');
+        grd.addColorStop(1, 'rgba(255,80,50,'  + (op * 0.65) + ')');
+        ctx.fillStyle = grd;
+        if (n.hovering) { ctx.shadowColor = 'rgba(255,140,60,0.38)'; ctx.shadowBlur = 20; }
+        else { ctx.shadowBlur = 0; ctx.shadowColor = 'transparent'; }
+      } else if (n.cat === 'medium') {
+        ctx.fillStyle = 'rgba(17,17,16,' + (n.hovering ? 0.38 : 0.25) + ')';
+      } else {
+        ctx.fillStyle = 'rgba(17,17,16,' + (n.hovering ? 0.28 : 0.15) + ')';
+      }
+
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    });
+
+    /* reset any lingering shadow before text */
+    ctx.shadowBlur  = 0;
+    ctx.shadowColor = 'transparent';
+
+    /* ── labels (always visible, no background) ────────────────────────── */
+    nodes.forEach(function (n) {
+      ctx.save();
+
+      var fontSize, baseOpa;
+      if (n.cat === 'large') {
+        fontSize = LABEL_SIZE_LARGE;  baseOpa = LABEL_OPACITY_LARGE;
+      } else if (n.cat === 'medium') {
+        fontSize = LABEL_SIZE_MEDIUM; baseOpa = LABEL_OPACITY_MEDIUM;
+      } else {
+        fontSize = LABEL_SIZE_SMALL;  baseOpa = LABEL_OPACITY_SMALL;
+      }
+
+      ctx.font         = '500 ' + fontSize + 'px Outfit, sans-serif';
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowBlur   = 0;
+      ctx.shadowColor  = 'transparent';
+      ctx.fillStyle    = LABEL_COLOR;
+      ctx.globalAlpha  = n.hovering ? 1.0 : baseOpa;
+
+      var r  = n.r * n.hScale;
+      var ly = n.y - r - 8;
+      if (ly < 8) ly = n.y + r + 8;
+
+      ctx.fillText(n.label, n.x, ly);
+      ctx.globalAlpha = 1;
+
+      ctx.restore();
+    });
+  }
+
+  /* ─── tilt on h1 ─────────────────────────────────────────────────────── */
+  var h1 = hero.querySelector('.hero-headline h1');
+  if (h1 && !reduced) {
+    h1.style.transition   = 'transform 0.2s cubic-bezier(0.23,1,0.32,1)';
+    h1.style.display      = 'block';
+    hero.addEventListener('mousemove', function (e) {
+      var rect = hero.getBoundingClientRect();
+      var nx   = (e.clientX - rect.left) / rect.width  - 0.5;
+      var ny   = (e.clientY - rect.top)  / rect.height - 0.5;
+      h1.style.transform  = 'perspective(900px) rotateX(' + (-ny * 4.5) + 'deg) rotateY(' + (nx * 4.5) + 'deg)';
+    });
+    hero.addEventListener('mouseleave', function () {
+      h1.style.transform = 'perspective(900px) rotateX(0deg) rotateY(0deg)';
+    });
+  }
+
+  /* ─── boot ───────────────────────────────────────────────────────────── */
+  resize();
+
+  var ro = new ResizeObserver(function () { resize(); });
+  ro.observe(hero);
+
+  window.addEventListener('resize', function () {
+    if (window.innerWidth < 768) {
+      canvas.style.display = 'none';
+      cancelAnimationFrame(rafId);
+    } else {
+      canvas.style.display = '';
+    }
+  });
+
+  document.fonts.ready.then(function () {
+    requestAnimationFrame(frame);
+  });
+
+})();
+</script>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 
@@ -1458,11 +2143,10 @@ document.querySelectorAll('.nav-links a').forEach(link => {
   });
 });
 
-// Nav active state
+// Nav active state — scroll-based with getBoundingClientRect
 const sections = document.querySelectorAll('section[id]');
 const navPills = document.querySelectorAll('.nav-links a');
 
-// Map sections to their parent nav tab
 const sectionNavMap = {
   'home':    '#home',
   'work':    '#work',
@@ -1473,9 +2157,46 @@ const sectionNavMap = {
   'contact': '#contact'
 };
 
-sections.forEach(s => {
-  new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        navPills.forEach(a => a.classList.remove('active'));
-        const target = sectionNavMap[e.tar
+function updateActiveNav() {
+  const NAV_OFFSET = 100; // fixed nav height + threshold
+  let bestSection = null;
+  let bestDist = Infinity;
+
+  sections.forEach(section => {
+    const rect = section.getBoundingClientRect();
+    // Distance of section top from NAV_OFFSET line (positive = below, negative = above)
+    const dist = Math.abs(rect.top - NAV_OFFSET);
+    // Only consider sections that are at least partially visible
+    if (rect.bottom > NAV_OFFSET && rect.top < window.innerHeight) {
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestSection = section.id;
+      }
+    }
+  });
+
+  if (bestSection) {
+    const targetHref = sectionNavMap[bestSection];
+    navPills.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === targetHref);
+    });
+  }
+}
+
+// Throttled scroll listener
+let scrollTicking = false;
+window.addEventListener('scroll', () => {
+  if (!scrollTicking) {
+    requestAnimationFrame(() => {
+      updateActiveNav();
+      scrollTicking = false;
+    });
+    scrollTicking = true;
+  }
+}, { passive: true });
+
+// Set initial state on load
+updateActiveNav();
+</script>
+</body>
+</html>
