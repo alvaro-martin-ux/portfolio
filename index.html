@@ -405,12 +405,7 @@ section { padding: 80px 40px; }
     #080012;
 }
 
-.cv-04 {
-  background: var(--surface);
-  background-image:
-    repeating-linear-gradient(45deg, rgba(17,17,16,0.04) 0px, rgba(17,17,16,0.04) 1px, transparent 1px, transparent 22px),
-    repeating-linear-gradient(-45deg, rgba(17,17,16,0.04) 0px, rgba(17,17,16,0.04) 1px, transparent 1px, transparent 22px);
-}
+.cv-04 { background: #050F1F; }
 
 .case-visual::after {
   content: '';
@@ -1427,29 +1422,33 @@ body.enh .contact-h.vis {
     </a>
   </div>
 
-  <div class="case-item" style="opacity:0.6">
+  <div class="case-item" onclick="window.location='case-04.html'" style="cursor:pointer;">
     <div class="case-num">04</div>
     <div class="case-info">
       <div>
-        <span class="case-tag">Product Design · UI · Visual Design</span>
-        <h3 class="case-name">Mobile UI Case Study</h3>
+        <a href="case-04.html" style="text-decoration:none;display:contents;"><span class="case-tag">UX Research · UI Redesign · Mobile</span></a>
+        <h3 class="case-name"><a href="case-04.html" style="color:inherit;text-decoration:none;">AEMET App Redesign</a></h3>
       </div>
       <div class="case-attrs">
-        <div class="case-attr"><b>Focus</b> Mobile-first UI, design system foundations</div>
+        <div class="case-attr"><b>Challenge</b> Poor UX despite rich, exclusive meteorological data</div>
+        <div class="case-attr"><b>Approach</b> App Store review mining, heuristic evaluation and UI redesign</div>
         <div class="case-attr"><b>Status</b> Work in progress · Updated weekly</div>
       </div>
     </div>
+    <a href="case-04.html" style="text-decoration:none;color:inherit;display:contents;">
     <div class="case-visual cv-04">
-      <div class="wip-center">
-        <div class="wip-dot"></div>
-        <span class="wip-txt">In progress</span>
+      <img src="assets/cabecera.jpg" alt="AEMET App Redesign" style="width:100%;height:100%;object-fit:cover;display:block;">
+      <div style="position:absolute;top:16px;left:16px;display:flex;align-items:center;gap:7px;padding:5px 12px;background:rgba(0,0,0,0.45);border:1px solid rgba(255,255,255,0.15);border-radius:40px;z-index:2;backdrop-filter:blur(8px);">
+        <div class="wip-dot" style="background:#F5C518;width:7px;height:7px;"></div>
+        <span class="wip-txt" style="color:rgba(255,255,255,0.7);font-size:10px;">In progress</span>
       </div>
     </div>
+    </a>
     <div class="case-action">
-      <div class="case-arrow" style="opacity:0.3">
+      <div class="case-arrow">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
-      <span class="case-action-lbl">Soon</span>
+      <span class="case-action-lbl">Open case</span>
     </div>
   </div>
 </section>
