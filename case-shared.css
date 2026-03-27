@@ -76,7 +76,7 @@ body.cs-anim .impact-list.anim-list-vis li {
   transition: color 0.35s ease;
 }
 .sec-label.label-active {
-  color: var(--ink);
+  color: var(--accent);
 }
 
 /* ── 5. CONTEXT BOX LEFT-BORDER REVEAL ──────────────────────────────── */

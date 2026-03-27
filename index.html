@@ -406,6 +406,7 @@ section { padding: 80px 40px; }
 }
 
 .cv-04 { background: #050F1F; }
+.cv-05 { background: #0A0F1E; }
 
 .case-visual::after {
   content: '';
@@ -1251,6 +1252,7 @@ body.enh .contact-h.vis {
     transition: none !important;
   }
 }
+
 </style>
 </head>
 <body>
@@ -1442,6 +1444,32 @@ body.enh .contact-h.vis {
         <div class="wip-dot" style="background:#F5C518;width:7px;height:7px;"></div>
         <span class="wip-txt" style="color:rgba(255,255,255,0.7);font-size:10px;">In progress</span>
       </div>
+    </div>
+    </a>
+    <div class="case-action">
+      <div class="case-arrow">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <span class="case-action-lbl">Open case</span>
+    </div>
+  </div>
+
+  <div class="case-item" onclick="window.location='case-05.html'" style="cursor:pointer;">
+    <div class="case-num">05</div>
+    <div class="case-info">
+      <div>
+        <a href="case-05.html" style="text-decoration:none;display:contents;"><span class="case-tag">Design Tokens · Component Library · Figma</span></a>
+        <h3 class="case-name"><a href="case-05.html" style="color:inherit;text-decoration:none;">RENFE UI System</a></h3>
+      </div>
+      <div class="case-attrs">
+        <div class="case-attr"><b>Challenge</b> Build a scalable token architecture for a high-stakes purchase screen</div>
+        <div class="case-attr"><b>Approach</b> Four-layer system — primitives, semantic tokens, components, assembled UI</div>
+        <div class="case-attr"><b>Outcome</b> Fully documented design system with public Figma file</div>
+      </div>
+    </div>
+    <a href="case-05.html" style="text-decoration:none;color:inherit;display:contents;">
+    <div class="case-visual cv-05">
+      <img src="assets/hero-usecase5.jpg" alt="RENFE UI System" style="width:100%;height:100%;object-fit:cover;display:block;">
     </div>
     </a>
     <div class="case-action">
@@ -1813,8 +1841,6 @@ body.enh .contact-h.vis {
   var hero   = document.querySelector('.hero');
   var canvas = document.getElementById('hero-graph-canvas');
   if (!hero || !canvas) return;
-  if (window.innerWidth < 768) { canvas.style.display = 'none'; return; }
-
   var ctx     = canvas.getContext('2d');
   var dpr     = Math.min(window.devicePixelRatio || 1, 3);
   var W = 0, H = 0;
@@ -1828,7 +1854,7 @@ body.enh .contact-h.vis {
   var LABEL_SIZE_SMALL     = 10;
   var LABEL_SIZE_MEDIUM    = 11;
   var LABEL_SIZE_LARGE     = 12;
-  var EXCL_LEFT            = 500; /* px — no nodes left of this x */
+  var EXCL_LEFT            = window.innerWidth < 768 ? 0 : 500; /* px — no nodes left of this x */
   var EXCL_MARGIN          = 80;  /* soft-push starts this many px before the wall */
 
   /* ─── node definitions ───────────────────────────────────────────────── */
@@ -2117,12 +2143,8 @@ body.enh .contact-h.vis {
   ro.observe(hero);
 
   window.addEventListener('resize', function () {
-    if (window.innerWidth < 768) {
-      canvas.style.display = 'none';
-      cancelAnimationFrame(rafId);
-    } else {
-      canvas.style.display = '';
-    }
+    EXCL_LEFT = window.innerWidth < 768 ? 0 : 500;
+    canvas.style.display = '';
   });
 
   document.fonts.ready.then(function () {
