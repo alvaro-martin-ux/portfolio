@@ -156,7 +156,7 @@ nav {
 /* ─── HERO ─── */
 .hero {
   padding-top: 56px;
-  min-height: 100vh;
+  min-height: 110vh;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -972,11 +972,11 @@ footer p { font-size: 11px; font-weight: 300; color: var(--ink-light); letter-sp
 
   /* Hero */
   section { padding: 48px 20px; overflow-x: hidden; max-width: 100vw; box-sizing: border-box; }
-  .hero { padding-top: 56px; overflow-x: hidden; max-width: 100%; justify-content: flex-start; gap: 0; min-height: auto; padding-bottom: 0; }
+  .hero { padding-top: 56px; overflow-x: hidden; max-width: 100%; justify-content: flex-start; gap: 0; min-height: 130vh; padding-bottom: 0; }
   .hero-meta { grid-template-columns: 1fr; padding: 28px 20px 0; gap: 12px; }
   .hero-note { max-width: 100%; width: 100%; grid-column: 1 / -1; font-size: 13px; }
   .hero-stamps { font-size: 12px; }
-  .hero-headline { padding: 40px 20px 40px; }
+  .hero-headline { padding: calc(40px + 10vh) 20px 40px; }
   .hero-headline h1 { font-size: clamp(36px, 10vw, 52px); line-height: 0.95; overflow: hidden; word-break: break-word; }
 
   /* Cases */
@@ -1838,8 +1838,9 @@ body.enh .contact-h.vis {
   'use strict';
 
   /* ─── guards ─────────────────────────────────────────────────────────── */
-  var hero   = document.querySelector('.hero');
-  var canvas = document.getElementById('hero-graph-canvas');
+  var hero     = document.querySelector('.hero');
+  var heroMeta = document.querySelector('.hero-meta');
+  var canvas   = document.getElementById('hero-graph-canvas');
   if (!hero || !canvas) return;
   var ctx     = canvas.getContext('2d');
   var dpr     = Math.min(window.devicePixelRatio || 1, 3);
@@ -1856,6 +1857,7 @@ body.enh .contact-h.vis {
   var LABEL_SIZE_LARGE     = 12;
   var EXCL_LEFT            = window.innerWidth < 768 ? 0 : 500; /* px — no nodes left of this x */
   var EXCL_MARGIN          = 80;  /* soft-push starts this many px before the wall */
+  var EXCL_TOP             = 0;   /* px — no nodes above this y (protects hero-note text) */
 
   /* ─── node definitions ───────────────────────────────────────────────── */
   var NODE_DEF = [
@@ -1906,7 +1908,7 @@ body.enh .contact-h.vis {
         r:          d.r,
         cat:        d.cat,
         x:          EXCL_LEFT + d.r + 40 + Math.random() * Math.max(40, W - EXCL_LEFT - d.r * 2 - 120),
-        y:          d.r + 80 + Math.random() * (H - d.r * 2 - 160),
+        y:          Math.max(d.r + 80, EXCL_TOP + d.r + 16) + Math.random() * Math.max(40, H - Math.max(d.r + 80, EXCL_TOP + d.r + 16) - d.r * 2 - 80),
         vx:         Math.cos(ang) * spd,
         vy:         Math.sin(ang) * spd,
         ang:        ang,
@@ -1923,13 +1925,14 @@ body.enh .contact-h.vis {
   function resize() {
     W = hero.offsetWidth;
     H = hero.offsetHeight;
+    EXCL_TOP = heroMeta ? heroMeta.offsetTop + heroMeta.offsetHeight + 24 : 100;
     canvas.width  = Math.round(W * dpr);
     canvas.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);   /* reset + re-apply scale */
     if (nodes.length === 0) { initNodes(); return; }
     nodes.forEach(function (n) {
       n.x = Math.max(EXCL_LEFT + EXCL_MARGIN, Math.min(W - n.r - 10, n.x));
-      n.y = Math.max(n.r + 10, Math.min(H - n.r - 10, n.y));
+      n.y = Math.max(EXCL_TOP + n.r + 10, Math.min(H - n.r - 10, n.y));
     });
   }
 
@@ -2008,12 +2011,13 @@ body.enh .contact-h.vis {
         n.x += n.vx;
         n.y += n.vy;
 
-        /* soft boundary — left wall is EXCL_LEFT */
+        /* soft boundary — left wall is EXCL_LEFT, top wall is EXCL_TOP */
         var pad = n.r + 24;
         var leftWall = EXCL_LEFT + EXCL_MARGIN;
+        var topWall  = Math.max(pad, EXCL_TOP);
         if (n.x < leftWall)  n.vx += (leftWall - n.x) * 0.10;
         if (n.x > W - pad)   n.vx -= (n.x - (W - pad)) * 0.07;
-        if (n.y < pad)       n.vy += (pad - n.y) * 0.07;
+        if (n.y < topWall)   n.vy += (topWall - n.y) * 0.07;
         if (n.y > H - pad)   n.vy -= (n.y - (H - pad)) * 0.07;
       });
     }
