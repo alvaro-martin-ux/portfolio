@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iIzExMTExMCIvPgogIDx0ZXh0IHg9IjE2IiB5PSIyMyIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMjIiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiNGQUZBRjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkE8L3RleHQ+Cjwvc3ZnPg==">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case Study — AEMET App Redesign · Álvaro Martín</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+:root {
+  --bg:#FAFAF8; --surface:#ECEAE6; --white:#FFFFFF;
+  --ink:#111110; --ink-mid:#555450; --ink-light:#9A9891;
+  --line:rgba(17,17,16,0.1); --accent:#E8723A;
+  --ff-display:'Montserrat',sans-serif; --ff-body:'Outfit',sans-serif;
+}
+body { background:var(--bg); color:var(--ink); font-family:var(--ff-body); font-size:13px; line-height:1.6; overflow-x:hidden; }
+
+#reading-progress { position:fixed; top:0; left:0; height:2px; background:var(--accent); z-index:9999; width:0%; transition:width .1s linear; }
+
+.cursor { position:fixed; width:10px; height:10px; background:var(--ink); border-radius:50%; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); mix-blend-mode:difference; }
+.cursor-ring { position:fixed; width:36px; height:36px; border:1px solid rgba(17,17,16,.3); border-radius:50%; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:width .3s cubic-bezier(.23,1,.32,1),height .3s cubic-bezier(.23,1,.32,1); }
+
+nav { position:fixed; top:0; left:0; right:0; z-index:200; display:flex; align-items:center; height:56px; padding:0 40px; background:rgba(255,255,255,.95); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-bottom:1px solid var(--line); }
+.nav-back { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500; color:var(--ink-mid); text-decoration:none; transition:color .15s; }
+.nav-back:hover { color:var(--ink); }
+.nav-back:hover svg { transform:translateX(-3px); }
+.nav-back svg { transition:transform .2s; }
+.nav-case-title { font-family:var(--ff-display); font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-light); margin-left:auto; }
+
+.case-hero { width:100vw; min-height:480px; display:grid; grid-template-columns:1fr 1fr; margin-top:56px; overflow:hidden; }
+.case-hero-inner { position:relative; z-index:1; padding:64px 56px; background:var(--ink); display:flex; flex-direction:column; justify-content:flex-end; }
+.case-hero-visual { min-height:480px; position:relative; overflow:hidden; background:#050F1F; }
+.case-hero-visual > img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; display:block; }
+.wip-badge { position:absolute; top:24px; left:24px; display:flex; align-items:center; gap:8px; padding:6px 14px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); border-radius:40px; z-index:2; }
+.wip-dot { width:7px; height:7px; border-radius:50%; background:#F5C518; animation:blink 2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+.wip-txt { font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:rgba(255,255,255,.55); font-family:var(--ff-display); }
+
+.case-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:20px; }
+.tag { font-size:11px; font-weight:500; letter-spacing:.08em; text-transform:uppercase; padding:4px 10px; color:rgba(255,255,255,.7); background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); }
+.case-title-h1 { font-family:var(--ff-display); font-size:clamp(22px,2.8vw,36px); font-weight:700; letter-spacing:-.02em; line-height:1.15; color:#fff; margin-bottom:16px; }
+.case-subtitle-p { font-size:14px; font-weight:300; color:rgba(255,255,255,.5); line-height:1.7; }
+
+.container { max-width:1280px; margin:0 auto; padding:0 40px; }
+.case-section { padding:56px 0; border-bottom:1px solid var(--line); display:grid; grid-template-columns:200px 1fr; gap:0 64px; align-items:start; }
+.case-section:last-child { border-bottom:none; }
+.sec-label { font-family:var(--ff-display); font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--ink); display:block; position:sticky; top:80px; }
+.cs-content { min-width:0; }
+p.lead-p { font-size:15px; font-weight:300; color:var(--ink); line-height:1.75; margin-bottom:14px; }
+p.body-p { font-size:15px; font-weight:300; color:var(--ink-mid); line-height:1.75; margin-bottom:14px; }
+
+.context-box { background:transparent; border:1px solid rgba(17,17,16,.1); border-left:2px solid var(--accent); padding:16px 20px; margin:20px 0; display:flex; gap:14px; align-items:flex-start; }
+.context-box-icon { width:18px; height:18px; border-radius:50%; background:rgba(232,114,58,.08); border:1px solid rgba(232,114,58,.3); display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; color:var(--accent); font-family:var(--ff-display); font-size:10px; font-weight:700; font-style:italic; line-height:1; }
+.context-box p { font-size:13px; color:var(--ink-mid); margin:0; line-height:1.6; }
+
+.steps-list { list-style:none; margin:24px 0; }
+.step-item { display:grid; grid-template-columns:80px 1fr; gap:16px; align-items:start; padding:16px 0; border-bottom:1px solid var(--line); }
+.step-item:first-child { border-top:1px solid var(--line); }
+.step-num { font-family:var(--ff-display); font-size:11px; font-weight:700; letter-spacing:.08em; color:var(--accent); padding-top:2px; }
+.step-title { font-size:14px; font-weight:600; color:var(--ink); margin-bottom:4px; line-height:1.4; }
+.step-desc { font-size:13px; font-weight:300; color:var(--ink-mid); line-height:1.6; }
+.step-status { display:inline-block; margin-top:7px; font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; padding:2px 8px; border-radius:2px; }
+.status-done    { background:rgba(76,175,125,.12); color:#2d7a56; }
+.status-partial { background:rgba(232,114,58,.1); color:var(--accent); }
+.status-pending { background:rgba(17,17,16,.05); color:var(--ink-light); }
+
+.ba-wrap { display:grid; grid-template-columns:1fr 1fr; gap:40px; margin:28px 0; align-items:start; }
+.ba-col-label { font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-light); margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid var(--line); font-family:var(--ff-display); }
+
+/* Phone frames */
+.phone-before { background:linear-gradient(180deg,#1a5fa8 0%,#0d3a6b 40%,#1a2a4a 100%); display:flex; flex-direction:column; padding:14px 12px; gap:7px; height:100%; }
+.pb-topbar { display:flex; justify-content:space-between; align-items:center; }
+.pb-title { font-size:8px; color:rgba(255,255,255,.6); font-family:var(--ff-display); letter-spacing:.04em; }
+.pb-tabs { display:flex; border-bottom:1px solid rgba(255,255,255,.2); }
+.pb-tab { font-size:8px; color:rgba(255,255,255,.45); padding:4px 10px; font-family:var(--ff-display); font-weight:600; letter-spacing:.06em; }
+.pb-tab.on { color:#fff; border-bottom:2px solid #fff; }
+.pb-icon { font-size:30px; text-align:center; }
+.pb-temp { font-size:26px; font-weight:700; color:#fff; text-align:center; font-family:var(--ff-display); }
+.pb-desc { font-size:8px; color:rgba(255,255,255,.55); text-align:center; letter-spacing:.04em; }
+.pb-row { display:flex; justify-content:space-between; background:rgba(255,255,255,.09); border-radius:4px; padding:5px 6px; }
+.pb-cell { display:flex; flex-direction:column; align-items:center; gap:1px; }
+.pb-cell-i { font-size:9px; }
+.pb-cell-v { font-size:8px; color:#fff; font-weight:600; font-family:var(--ff-display); }
+.pb-cell-l { font-size:6px; color:rgba(255,255,255,.4); letter-spacing:.06em; text-transform:uppercase; font-family:var(--ff-display); }
+.pb-alert { background:rgba(245,166,35,.12); border:1px solid rgba(245,166,35,.3); border-radius:4px; padding:5px 7px; font-size:7px; color:rgba(255,255,255,.6); }
+.pb-section { font-size:7px; color:rgba(255,255,255,.35); font-family:var(--ff-display); font-weight:600; letter-spacing:.06em; text-transform:uppercase; }
+.pb-days { display:flex; flex-direction:column; gap:3px; }
+.pb-day { display:flex; justify-content:space-between; align-items:center; padding:3px 0; border-bottom:1px solid rgba(255,255,255,.08); }
+.pb-dl { font-size:7px; color:rgba(255,255,255,.5); font-family:var(--ff-display); }
+.pb-di { font-size:9px; }
+.pb-dt { font-size:8px; color:#fff; font-weight:600; font-family:var(--ff-display); }
+.phone-after { background:#F5F3EF; display:flex; flex-direction:column; padding:12px 10px; gap:5px; height:100%; }
+.pa-topbar { display:flex; justify-content:space-between; align-items:center; }
+.pa-pill { background:#111; border-radius:20px; padding:4px 10px; display:flex; align-items:center; gap:4px; }
+.pa-pill-t { font-size:8px; color:#fff; font-family:var(--ff-display); font-weight:600; letter-spacing:.04em; }
+.pa-pill-a { font-size:7px; color:rgba(255,255,255,.45); }
+.pa-icons { display:flex; gap:7px; font-size:11px; opacity:.45; }
+.pa-date { font-size:8px; color:var(--ink-light); letter-spacing:.03em; }
+.pa-big { position:relative; }
+.pa-temp { font-size:42px; font-weight:800; color:var(--ink); font-family:var(--ff-display); letter-spacing:-.03em; line-height:1; }
+.pa-sun { position:absolute; right:0; top:-2px; width:42px; height:42px; border-radius:50%; background:radial-gradient(circle,#FFAE42 0%,#FF8C00 70%,transparent 100%); opacity:.8; }
+.pa-cond { font-size:10px; color:var(--ink-mid); font-weight:300; }
+.pa-feels { font-size:8px; color:var(--ink-light); }
+.pa-grid { display:grid; grid-template-columns:1fr 1fr; gap:4px; }
+.pa-card { background:#fff; border-radius:7px; padding:7px; display:flex; flex-direction:column; gap:2px; }
+.pa-card-i { font-size:10px; opacity:.55; }
+.pa-card-v { font-size:11px; font-weight:700; color:var(--ink); font-family:var(--ff-display); }
+.pa-card-l { font-size:6px; color:var(--ink-light); text-transform:uppercase; letter-spacing:.06em; font-family:var(--ff-display); }
+.pa-zone { font-size:7px; font-weight:600; color:var(--ink); font-family:var(--ff-display); letter-spacing:.06em; text-transform:uppercase; }
+.pa-dots { display:flex; gap:2px; align-items:center; }
+.dot { width:6px; height:6px; border-radius:50%; }
+.dot.lo { background:#4CAF7D; }
+.dot.me { background:#F5A623; }
+.dot.hi { background:#D0342C; }
+.pa-fc-label { font-size:7px; font-weight:600; color:var(--ink); font-family:var(--ff-display); letter-spacing:.06em; text-transform:uppercase; }
+.pa-fc-row { display:flex; justify-content:space-between; align-items:center; background:#fff; border-radius:6px; padding:6px 8px; }
+.pa-fc-d { font-size:8px; font-weight:600; color:var(--ink); font-family:var(--ff-display); }
+.pa-fc-i { font-size:9px; }
+.pa-fc-t { font-size:7px; color:var(--ink-mid); font-family:var(--ff-display); }
+.pa-nav { display:flex; justify-content:space-around; padding:5px 0 0; border-top:1px solid var(--line); margin-top:auto; }
+.pa-ni { display:flex; flex-direction:column; align-items:center; gap:2px; opacity:.38; }
+.pa-ni.on { opacity:1; }
+.pa-ni-i { font-size:10px; }
+.pa-ni-l { font-size:6px; color:var(--ink-light); font-family:var(--ff-display); font-weight:600; letter-spacing:.06em; text-transform:uppercase; }
+.pa-ni.on .pa-ni-l { color:var(--ink); }
+
+/* Research */
+.res-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); margin:28px 0; }
+.res-stat { background:var(--bg); padding:20px 16px; display:flex; flex-direction:column; gap:4px; }
+.res-stat-num { font-family:var(--ff-display); font-size:28px; font-weight:700; color:var(--ink); letter-spacing:-.02em; line-height:1; }
+.res-stat-label { font-size:11px; color:var(--ink-light); font-weight:400; line-height:1.4; }
+
+.res-chart-wrap { margin:28px 0; }
+.res-chart-title { font-size:11px; font-weight:700; font-family:var(--ff-display); letter-spacing:.08em; text-transform:uppercase; color:var(--ink-light); margin-bottom:16px; }
+.res-trend { display:grid; grid-template-columns:repeat(6,1fr); gap:1px; background:var(--line); border:1px solid var(--line); margin:28px 0; }
+.res-trend-col { background:var(--bg); padding:14px 10px; display:flex; flex-direction:column; align-items:center; gap:6px; }
+.res-trend-year { font-size:10px; font-weight:700; font-family:var(--ff-display); letter-spacing:.06em; color:var(--ink-light); }
+.res-trend-star { font-family:var(--ff-display); font-size:18px; font-weight:800; color:var(--ink); line-height:1; }
+.res-trend-star.low { color:var(--accent); }
+.res-trend-bar-wrap { width:100%; display:flex; flex-direction:column; gap:3px; }
+.res-trend-seg { height:4px; border-radius:2px; width:100%; }
+.res-trend-pos { background:#4CAF7D; }
+.res-trend-neg { background:var(--accent); }
+.res-trend-label { font-size:9px; color:var(--ink-light); text-align:center; line-height:1.3; }
+
+.res-insight { margin:28px 0 0; background:var(--ink); padding:24px; }
+.res-insight-flag { font-size:10px; font-weight:700; font-family:var(--ff-display); letter-spacing:.1em; text-transform:uppercase; color:var(--accent); margin-bottom:8px; }
+.res-insight p { font-size:14px; font-weight:300; color:rgba(255,255,255,.75); line-height:1.75; margin:0; }
+.res-insight strong { color:#fff; font-weight:500; }
+
+/* Pain point cards */
+.pp-card { border-bottom:1px solid var(--line); }
+.pp-card:first-of-type { border-top:1px solid var(--line); }
+.pp-summary { list-style:none; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:13px 0; cursor:pointer; user-select:none; }
+.pp-summary::-webkit-details-marker { display:none; }
+.pp-sum-left { display:flex; align-items:center; gap:10px; min-width:0; }
+.pp-sum-right { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.pp-badge { font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; font-family:var(--ff-display); padding:2px 7px; border-radius:2px; flex-shrink:0; }
+.pp-crit { background:rgba(232,114,58,.12); color:var(--accent); }
+.pp-hi   { background:rgba(17,17,16,.07); color:var(--ink-mid); }
+.pp-med  { background:rgba(17,17,16,.04); color:var(--ink-light); }
+.pp-name { font-size:13px; font-weight:500; color:var(--ink); }
+.pp-mini-track { width:80px; height:3px; background:rgba(17,17,16,.07); border-radius:2px; overflow:hidden; }
+.pp-mini-fill { height:100%; border-radius:2px; background:var(--accent); }
+.pp-pct { font-family:var(--ff-display); font-size:11px; font-weight:700; color:var(--ink-mid); width:30px; text-align:right; }
+.pp-chevron { color:var(--ink-light); transition:transform .2s; flex-shrink:0; }
+details[open] .pp-chevron { transform:rotate(180deg); }
+.pp-body { padding:0 0 20px 0; display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; }
+.pp-sub-list { display:flex; flex-direction:column; gap:10px; }
+.pp-sub { display:flex; gap:10px; align-items:flex-start; font-size:12px; color:var(--ink-mid); line-height:1.55; }
+.pp-sub strong { color:var(--ink); font-weight:500; }
+.pp-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; margin-top:4px; }
+.pp-dot-crit { background:var(--accent); }
+.pp-dot-hi   { background:var(--ink-mid); }
+.pp-dot-med  { background:var(--ink-light); }
+.pp-design-link { background:var(--surface); padding:14px 16px; border-left:2px solid var(--ink); }
+.pp-dl-label { display:block; font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; font-family:var(--ff-display); color:var(--ink-light); margin-bottom:6px; }
+.pp-design-link p { font-size:12px; color:var(--ink-mid); line-height:1.6; margin:0; }
+
+/* ── CORPUS BLOCK ── */
+.corpus-block { margin:36px 0 0; }
+.corpus-header { display:grid; grid-template-columns:1fr 1fr; gap:2.5rem; align-items:start; margin-bottom:20px; }
+.corpus-tag { display:inline-block; font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:var(--accent); font-family:var(--ff-display); font-weight:700; margin-bottom:6px; }
+.corpus-title { font-size:13px; font-weight:600; color:var(--ink); margin:4px 0 8px; font-family:var(--ff-display); }
+.corpus-desc { font-size:12px; line-height:1.65; color:var(--ink-mid); font-family:var(--ff-body); margin:0; }
+.corpus-desc code { font-size:11px; background:var(--surface); padding:.1em .35em; border-radius:3px; color:var(--ink); font-family:'SF Mono','Fira Code',monospace; }
+.corpus-years { display:flex; flex-direction:column; gap:7px; }
+.corpus-year { display:grid; grid-template-columns:36px 1fr 36px; align-items:center; gap:10px; }
+.corpus-year-label { font-size:11px; color:var(--ink-light); font-family:var(--ff-display); font-weight:600; text-align:right; }
+.corpus-year-bar-wrap { height:5px; background:rgba(17,17,16,.07); border-radius:3px; overflow:hidden; }
+.corpus-year-bar { height:100%; background:var(--accent); border-radius:3px; }
+.corpus-year-count { font-size:11px; color:var(--ink-mid); font-family:var(--ff-display); font-weight:600; text-align:right; }
+.corpus-year--total { margin-top:4px; padding-top:8px; border-top:1px solid var(--line); grid-template-columns:36px 1fr 48px; }
+.corpus-year-count--total { font-size:13px; color:var(--accent); font-weight:700; }
+
+.sheets-embed-wrapper { border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--white); }
+.sheets-embed-toolbar { display:flex; align-items:center; gap:6px; padding:9px 14px; background:var(--surface); border-bottom:1px solid var(--line); }
+.sheets-dots { display:flex; gap:5px; }
+.sheets-dot { width:10px; height:10px; border-radius:50%; }
+.sheets-dot--r { background:#ff5f57; }
+.sheets-dot--y { background:#ffbd2e; }
+.sheets-dot--g { background:#28c840; }
+.sheets-embed-name { flex:1; font-size:11px; color:var(--ink-light); font-family:var(--ff-display); margin-left:6px; letter-spacing:.02em; }
+.sheets-embed-link { font-size:11px; color:var(--accent); text-decoration:none; font-family:var(--ff-display); font-weight:600; white-space:nowrap; }
+.sheets-embed-link:hover { text-decoration:underline; }
+.sheets-embed-frame { position:relative; width:100%; height:460px; }
+.sheets-embed-frame iframe { width:100%; height:100%; border:none; display:block; }
+.sheets-embed-caption { padding:10px 14px; font-size:11px; color:var(--ink-light); font-family:var(--ff-body); border-top:1px solid var(--line); background:var(--bg); margin:0; }
+.sheets-embed-caption code { font-size:10px; background:var(--surface); padding:.1em .3em; border-radius:2px; }
+
+/* ── WIREFRAMES SECTION ── */
+.wf-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); margin:28px 0; }
+.wf-stat { background:var(--bg); padding:18px 16px; display:flex; flex-direction:column; gap:4px; }
+.wf-stat-num { font-family:var(--ff-display); font-size:24px; font-weight:700; color:var(--ink); letter-spacing:-.02em; line-height:1; }
+.wf-stat-label { font-size:11px; color:var(--ink-light); font-weight:400; line-height:1.4; }
+
+.figma-embed-wrapper { border:1px solid var(--line); border-radius:10px; overflow:hidden; margin:0 0 28px; }
+.figma-embed-header { display:flex; align-items:center; gap:6px; padding:9px 14px; background:#1e1e1e; border-bottom:1px solid rgba(255,255,255,.08); }
+.figma-dots { display:flex; gap:5px; }
+.figma-dot { width:10px; height:10px; border-radius:50%; }
+.figma-dot--r { background:#ff5f57; }
+.figma-dot--y { background:#ffbd2e; }
+.figma-dot--g { background:#28c840; }
+.figma-embed-title { flex:1; font-size:11px; color:rgba(255,255,255,.4); font-family:var(--ff-display); margin-left:6px; }
+.figma-embed-open { font-size:11px; color:var(--accent); text-decoration:none; font-family:var(--ff-display); font-weight:600; white-space:nowrap; }
+.figma-embed-open:hover { text-decoration:underline; }
+.figma-embed-container { position:relative; width:100%; height:520px; }
+.figma-embed-container iframe { position:absolute; top:0; left:0; width:100%; height:100%; border:none; }
+.figma-embed-note { padding:10px 14px; font-size:11px; color:var(--ink-light); font-family:var(--ff-body); border-top:1px solid var(--line); background:var(--bg); margin:0; }
+
+.wf-index-title { font-size:11px; font-weight:700; font-family:var(--ff-display); letter-spacing:.08em; text-transform:uppercase; color:var(--ink-light); margin-bottom:14px; }
+.wf-index-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.wf-module { display:grid; grid-template-columns:28px 1fr auto; align-items:center; gap:8px; padding:10px 12px; border:1px solid var(--line); border-radius:6px; }
+.wf-module-num { font-size:10px; font-weight:700; color:var(--accent); font-family:var(--ff-display); }
+.wf-module-name { font-size:12px; color:var(--ink); font-family:var(--ff-body); }
+.wf-module-states { font-size:10px; color:var(--ink-light); white-space:nowrap; }
+
+/* Footer */
+.case-footer { background:var(--white); border-top:1px solid var(--line); padding:28px 40px; display:flex; justify-content:space-between; align-items:center; }
+.footer-back { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500; color:var(--ink-mid); text-decoration:none; transition:color .15s; }
+.footer-back:hover { color:var(--ink); }
+.footer-meta { font-size:12px; color:var(--ink-light); font-weight:300; }
+
+@media (max-width:768px) {
+  body { cursor:auto; }
+  .cursor,.cursor-ring { display:none; }
+  nav { padding:0 20px; }
+  .case-hero { grid-template-columns:1fr; }
+  .case-hero-visual { min-height:200px; order:-1; }
+  .case-hero-inner { padding:40px 20px; }
+  .container { padding:0 20px; }
+  .case-section { grid-template-columns:1fr; gap:16px; }
+  .sec-label { position:static; }
+  .ba-wrap { grid-template-columns:1fr; max-width:260px; margin:28px auto; }
+  .step-item { grid-template-columns:60px 1fr; }
+  .case-footer { padding:20px; flex-direction:column; gap:10px; }
+  .res-stats { grid-template-columns:1fr 1fr; }
+  .corpus-header { grid-template-columns:1fr; }
+  .wf-index-grid { grid-template-columns:1fr; }
+  .wf-stats { grid-template-columns:1fr 1fr; }
+  .pp-body { grid-template-columns:1fr; }
+  .pp-mini-track { width:48px; }
+}
+</style>
+<link rel="stylesheet" href="case-shared.css">
+</head>
+<body>
+
+<div id="reading-progress" aria-hidden="true"></div>
+<div id="cursorDot" class="cursor"></div>
+<div id="cursorRing" class="cursor-ring"></div>
+
+<nav>
+  <a href="index.html" class="nav-back">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Back
+  </a>
+  <span class="nav-case-title">Case Study 04 · In Progress</span>
+</nav>
+
+<div class="case-hero">
+  <div class="case-hero-inner">
+    <div class="case-tags">
+      <span class="tag">UX Research</span>
+      <span class="tag">UI Redesign</span>
+      <span class="tag">Mobile</span>
+    </div>
+    <h1 class="case-title-h1"><span style="font-weight:300;">Case Study —</span> AEMET App Redesign</h1>
+    <p class="case-subtitle-p">A research-driven redesign of Spain's official weather app. Starting from multi-year App Store feedback, translating user frustration into specific, defensible UI decisions.</p>
+  </div>
+  <div class="case-hero-visual">
+    <img src="assets/cabecera.jpg" alt="AEMET App Redesign hero">
+    <div class="wip-badge">
+      <div class="wip-dot"></div>
+      <span class="wip-txt">Work in progress</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- CONTEXT -->
+  <div class="case-section">
+    <div class="sec-label">Context</div>
+    <div class="cs-content">
+      <p class="lead-p">AEMET is Spain's official meteorological agency. Their app is one of the most downloaded weather apps in the country — and despite containing genuinely rich data that private competitors can't match, it consistently receives low satisfaction ratings.</p>
+      <p class="body-p">The gap between data quality and experience quality is a design problem, not a data problem. This project explores how a research-first approach can generate specific, defensible UI decisions — rather than redesigning based on aesthetic preferences alone.</p>
+      <div class="context-box">
+        <span class="context-box-icon">i</span>
+        <p>Self-initiated portfolio project, not affiliated with AEMET. Scoped to the mobile app (iOS and Android). No changes to the underlying meteorological models are proposed.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- EARLY EXPLORATION -->
+  <div class="case-section">
+    <div class="sec-label">Early Exploration</div>
+    <div class="cs-content">
+      <p class="lead-p">Before completing the research synthesis, an initial visual exploration was developed to test hypotheses about information hierarchy, navigation structure and the weather-state graphic system.</p>
+      <p class="body-p">Showing this early exploration is intentional: the research will validate, refine or challenge these decisions — not decorate them.</p>
+      <div class="ba-wrap">
+        <div>
+          <p class="ba-col-label">Before — Current AEMET App</p>
+          <img src="assets/case4-antes.png" alt="Current AEMET app — before redesign" style="display:block;max-height:620px;width:auto;max-width:100%;border-radius:16px;">
+        </div>
+        <div>
+          <p class="ba-col-label">After — Design Exploration</p>
+          <img src="assets/case4-despues.png" alt="Redesigned AEMET app — design exploration" style="display:block;max-height:620px;width:auto;max-width:100%;border-radius:16px;">
+        </div>
+      </div>
+      <div class="context-box">
+        <span class="context-box-icon">i</span>
+        <p>These screens are a starting hypothesis, not a validated design. The research synthesis will determine which decisions hold up, which need to be revised, and what problems may be introduced.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROCESS -->
+  <div class="case-section">
+    <div class="sec-label">Process</div>
+    <div class="cs-content">
+      <p class="lead-p">The project is structured in four phases. Research and wireframing are complete — visual design and validation follow.</p>
+      <ul class="steps-list">
+        <li class="step-item"><div class="step-num">Phase 01</div><div><p class="step-title">Research</p><p class="step-desc">1.079 Play Store reviews analyzed (2020–2025), manual qualitative coding into 9 categories, heuristic evaluation of the current app, and competitive analysis.</p><span class="step-status status-done">Complete</span></div></li>
+        <li class="step-item"><div class="step-num">Phase 02</div><div><p class="step-title">Wireframes &amp; Functional spec</p><p class="step-desc">Full wireframe set covering all states, flows and edge cases. Functional documentation with variables, transitions and design notes per screen.</p><span class="step-status status-done">Complete</span></div></li>
+        <li class="step-item"><div class="step-num">Phase 03</div><div><p class="step-title">UI Design</p><p class="step-desc">Component library and design tokens in Figma (light/dark mode). High-fidelity screens for all main sections. Interactive prototype.</p><span class="step-status status-pending">Pending</span></div></li>
+        <li class="step-item"><div class="step-num">Phase 04</div><div><p class="step-title">Validation</p><p class="step-desc">Guerrilla usability testing (3–5 sessions) with the redesigned prototype against the original app.</p><span class="step-status status-pending">Pending</span></div></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- RESEARCH -->
+  <div class="case-section">
+    <div class="sec-label">Research</div>
+    <div class="cs-content">
+      <p class="lead-p">1.079 Play Store reviews were analyzed across six years (2020–2025), manually coded into nine problem categories. The corpus is biased toward negative experiences — that's the nature of public reviews — but the frequency and consistency of certain complaints across different years and users makes them reliable signals.</p>
+
+      <div class="res-stats">
+        <div class="res-stat">
+          <span class="res-stat-num">1.079</span>
+          <span class="res-stat-label">reviews analyzed · 2020–2025</span>
+        </div>
+        <div class="res-stat">
+          <span class="res-stat-num">9</span>
+          <span class="res-stat-label">problem categories identified</span>
+        </div>
+        <div class="res-stat">
+          <span class="res-stat-num" style="color:var(--accent)">2.2★</span>
+          <span class="res-stat-label">average rating in 2025</span>
+        </div>
+        <div class="res-stat">
+          <span class="res-stat-num">5</span>
+          <span class="res-stat-label">key architectural changes proposed</span>
+        </div>
+      </div>
+
+      <p class="res-chart-title">Rating trend · 2020 → 2025</p>
+      <div class="res-trend">
+        <div class="res-trend-col">
+          <span class="res-trend-year">2020</span><span class="res-trend-star">3.7★</span>
+          <div class="res-trend-bar-wrap"><div class="res-trend-seg res-trend-pos" style="opacity:.65"></div><div class="res-trend-seg res-trend-neg" style="width:25%;opacity:.8"></div></div>
+          <span class="res-trend-label">65% pos<br>25% neg</span>
+        </div>
+        <div class="res-trend-col">
+          <span class="res-trend-year">2021</span><span class="res-trend-star low">2.8★</span>
+          <div class="res-trend-bar-wrap"><div class="res-trend-seg res-trend-pos" style="width:41%;opacity:.65"></div><div class="res-trend-seg res-trend-neg" style="width:47%"></div></div>
+          <span class="res-trend-label">41% pos<br>47% neg</span>
+        </div>
+        <div class="res-trend-col">
+          <span class="res-trend-year">2022</span><span class="res-trend-star low">2.8★</span>
+          <div class="res-trend-bar-wrap"><div class="res-trend-seg res-trend-pos" style="width:43%;opacity:.65"></div><div class="res-trend-seg res-trend-neg" style="width:44%"></div></div>
+          <span class="res-trend-label">43% pos<br>44% neg</span>
+        </div>
+        <div class="res-trend-col">
+          <span class="res-trend-year">2023</span><span class="res-trend-star low">2.7★</span>
+          <div class="res-trend-bar-wrap"><div class="res-trend-seg res-trend-pos" style="width:42%;opacity:.65"></div><div class="res-trend-seg res-trend-neg" style="width:41%"></div></div>
+          <span class="res-trend-label">42% pos<br>41% neg</span>
+        </div>
+        <div class="res-trend-col">
+          <span class="res-trend-year">2024</span><span class="res-trend-star low">2.5★</span>
+          <div class="res-trend-bar-wrap"><div class="res-trend-seg res-trend-pos" style="width:35%;opacity:.65"></div><div class="res-trend-seg res-trend-neg" style="width:48%"></div></div>
+          <span class="res-trend-label">35% pos<br>48% neg</span>
+        </div>
+        <div class="res-trend-col">
+          <span class="res-trend-year">2025</span><span class="res-trend-star low">2.2★</span>
+          <div class="res-trend-bar-wrap"><div class="res-trend-seg res-trend-pos" style="width:37%;opacity:.65"></div><div class="res-trend-seg res-trend-neg" style="width:46%"></div></div>
+          <span class="res-trend-label">37% pos<br>46% neg</span>
+        </div>
+      </div>
+
+      <!-- Corpus de datos -->
+      <div class="corpus-block">
+        <div class="corpus-header">
+          <div>
+            <span class="corpus-tag">Fuente primaria</span>
+            <h3 class="corpus-title">Corpus de reviews analizado</h3>
+            <p class="corpus-desc">1.079 reviews codificadas manualmente por categoría de problema, año e intensidad emocional. El campo <code>helpful_count</code> se usó como proxy de resonancia colectiva para ponderar los pain points más compartidos.</p>
+          </div>
+          <div class="corpus-years">
+            <div class="corpus-year"><span class="corpus-year-label">2020</span><div class="corpus-year-bar-wrap"><div class="corpus-year-bar" style="width:calc(155/240*100%)"></div></div><span class="corpus-year-count">155</span></div>
+            <div class="corpus-year"><span class="corpus-year-label">2021</span><div class="corpus-year-bar-wrap"><div class="corpus-year-bar" style="width:calc(164/240*100%)"></div></div><span class="corpus-year-count">164</span></div>
+            <div class="corpus-year"><span class="corpus-year-label">2022</span><div class="corpus-year-bar-wrap"><div class="corpus-year-bar" style="width:calc(167/240*100%)"></div></div><span class="corpus-year-count">167</span></div>
+            <div class="corpus-year"><span class="corpus-year-label">2023</span><div class="corpus-year-bar-wrap"><div class="corpus-year-bar" style="width:calc(113/240*100%)"></div></div><span class="corpus-year-count">113</span></div>
+            <div class="corpus-year"><span class="corpus-year-label">2024</span><div class="corpus-year-bar-wrap"><div class="corpus-year-bar" style="width:100%"></div></div><span class="corpus-year-count">240</span></div>
+            <div class="corpus-year"><span class="corpus-year-label">2025</span><div class="corpus-year-bar-wrap"><div class="corpus-year-bar" style="width:100%"></div></div><span class="corpus-year-count">240</span></div>
+            <div class="corpus-year corpus-year--total"><span class="corpus-year-label">Total</span><div></div><span class="corpus-year-count corpus-year-count--total">1.079</span></div>
+          </div>
+        </div>
+        <div class="sheets-embed-wrapper">
+          <div class="sheets-embed-toolbar">
+            <div class="sheets-dots"><span class="sheets-dot sheets-dot--r"></span><span class="sheets-dot sheets-dot--y"></span><span class="sheets-dot sheets-dot--g"></span></div>
+            <span class="sheets-embed-name">Reviews AEMET · Google Play Store 2020–2025</span>
+            <a href="https://docs.google.com/spreadsheets/d/1_h6e6yQ2dcuulC0BROzGFBQHoZO9IVssktfG7DYquDI/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="sheets-embed-link">Abrir en Sheets ↗</a>
+          </div>
+          <div class="sheets-embed-frame">
+            <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vT-v0vKyFsDO10zqjVmVCqjbWRhFUyif6WzwlHL78O8UgVZ0bLcHV7ekXfgemihFGCVkuVtXEfknvGz/pubhtml?widget=true&headers=false" loading="lazy" title="Corpus de reviews AEMET — Google Play Store 2020–2025"></iframe>
+          </div>
+          <p class="sheets-embed-caption">Cada fila es una review con su puntuación, año, texto y <code>helpful_count</code>. Las categorías de pain point se asignaron en la codificación cualitativa manual.</p>
+        </div>
+      </div>
+
+      <p class="res-chart-title" style="margin-top:32px;">Pain point categories · % of negative reviews · click to expand</p>
+
+      <details class="pp-card" open>
+        <summary class="pp-summary"><div class="pp-sum-left"><span class="pp-badge pp-crit">Critical</span><span class="pp-name">Inaccurate predictions</span></div><div class="pp-sum-right"><div class="pp-mini-track"><div class="pp-mini-fill" style="width:98%"></div></div><span class="pp-pct">98%</span><svg class="pp-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></summary>
+        <div class="pp-body"><div class="pp-sub-list"><div class="pp-sub"><span class="pp-dot pp-dot-crit"></span><div><strong>Predicts sun when it's raining (96%)</strong> — Real-time mismatch: the forecast doesn't reflect what's actually happening outside.</div></div><div class="pp-sub"><span class="pp-dot pp-dot-crit"></span><div><strong>Forecast changes radically within hours (68%)</strong> — Inconsistency between morning and evening prediction for the same day.</div></div><div class="pp-sub"><span class="pp-dot pp-dot-hi"></span><div><strong>Days view contradicts hours view (48%)</strong> — The 24h forecast shows different data depending on which tab you're looking at.</div></div></div><div class="pp-design-link"><span class="pp-dl-label">Current design</span><p>The app exposes two separate data views (days / hours) that pull from different API endpoints without a unifying model. There's no visible "last updated" timestamp, so users can't tell whether they're seeing a stale prediction or a genuinely changed forecast.</p></div></div>
+      </details>
+      <details class="pp-card"><summary class="pp-summary"><div class="pp-sum-left"><span class="pp-badge pp-crit">Critical</span><span class="pp-name">Widget not updating</span></div><div class="pp-sum-right"><div class="pp-mini-track"><div class="pp-mini-fill" style="width:92%"></div></div><span class="pp-pct">92%</span><svg class="pp-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></summary><div class="pp-body"><div class="pp-sub-list"><div class="pp-sub"><span class="pp-dot pp-dot-crit"></span><div><strong>Doesn't refresh without manually opening the app (94%)</strong> — Can show days-old data. There is no background service running.</div></div><div class="pp-sub"><span class="pp-dot pp-dot-crit"></span><div><strong>Shows max/min only, never current temperature (62%)</strong> — Users want to know what it feels like right now, not the day's range.</div></div><div class="pp-sub"><span class="pp-dot pp-dot-hi"></span><div><strong>Gets stuck on "Loading…" indefinitely (44%)</strong> — The widget enters an infinite loading state with no fallback or retry mechanism.</div></div></div><div class="pp-design-link"><span class="pp-dl-label">Current design</span><p>No background refresh service (WorkManager / BackgroundTasks) is implemented. The widget is also architecturally dependent on the full app opening to trigger a fetch — there's no independent data layer.</p></div></div></details>
+      <details class="pp-card"><summary class="pp-summary"><div class="pp-sum-left"><span class="pp-badge pp-crit">Critical</span><span class="pp-name">Geolocation failures</span></div><div class="pp-sum-right"><div class="pp-mini-track"><div class="pp-mini-fill" style="width:72%"></div></div><span class="pp-pct">72%</span><svg class="pp-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></summary><div class="pp-body"><div class="pp-sub-list"><div class="pp-sub"><span class="pp-dot pp-dot-crit"></span><div><strong>Infinite spinner — location never resolves</strong> — The app shows a loading state with no timeout, fallback, or error message.</div></div><div class="pp-sub"><span class="pp-dot pp-dot-hi"></span><div><strong>Small municipalities not found</strong> — The database only covers large towns; pedanías, coastal zones and rural areas return no results.</div></div></div><div class="pp-design-link"><span class="pp-dl-label">Current design</span><p>The municipality database is limited to capitals and large towns. There's no fuzzy search or autocomplete, so partial names yield zero results.</p></div></div></details>
+      <details class="pp-card"><summary class="pp-summary"><div class="pp-sum-left"><span class="pp-badge pp-crit">Critical</span><span class="pp-name">Crashes &amp; offline errors</span></div><div class="pp-sum-right"><div class="pp-mini-track"><div class="pp-mini-fill" style="width:68%"></div></div><span class="pp-pct">68%</span><svg class="pp-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></summary><div class="pp-body"><div class="pp-sub-list"><div class="pp-sub"><span class="pp-dot pp-dot-crit"></span><div><strong>"No connection" error with active data (68%)</strong> — The app shows a connectivity error even when users have full signal.</div></div><div class="pp-sub"><span class="pp-dot pp-dot-crit"></span><div><strong>Blank screen on load failure</strong> — No fallback content, no offline state, no last-known data shown.</div></div></div><div class="pp-design-link"><span class="pp-dl-label">Current design</span><p>There's no local cache layer (Room / SQLite). Every app open is a live network fetch with no persistence.</p></div></div></details>
+      <details class="pp-card"><summary class="pp-summary"><div class="pp-sum-left"><span class="pp-badge pp-crit">Critical</span><span class="pp-name">Broken radar</span></div><div class="pp-sum-right"><div class="pp-mini-track"><div class="pp-mini-fill" style="width:58%"></div></div><span class="pp-pct">58%</span><svg class="pp-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></summary><div class="pp-body"><div class="pp-sub-list"><div class="pp-sub"><span class="pp-dot pp-dot-crit"></span><div><strong>Radar tab opens the desktop website (90%)</strong> — Tapping Radar launches the browser with aemet.es in full desktop layout — unusable on mobile.</div></div><div class="pp-sub"><span class="pp-dot pp-dot-crit"></span><div><strong>When it does open, data is hours or days old (58%)</strong> — No cache invalidation or freshness indicator.</div></div></div><div class="pp-design-link"><span class="pp-dl-label">Current design</span><p>The Radar tab is a WebView pointing to the desktop version of aemet.es — there's no native tile integration. This is the single most disruptive moment in the user journey.</p></div></div></details>
+      <details class="pp-card"><summary class="pp-summary"><div class="pp-sum-left"><span class="pp-badge pp-hi">High</span><span class="pp-name">Design &amp; UI legibility</span></div><div class="pp-sum-right"><div class="pp-mini-track"><div class="pp-mini-fill" style="width:52%"></div></div><span class="pp-pct">52%</span><svg class="pp-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></summary><div class="pp-body"><div class="pp-sub-list"><div class="pp-sub"><span class="pp-dot pp-dot-hi"></span><div><strong>Illegible typography at a glance</strong> — Small font sizes, low contrast, and dense layout make quick reading difficult.</div></div><div class="pp-sub"><span class="pp-dot pp-dot-hi"></span><div><strong>Interface feels outdated</strong> — Complaints spiked sharply in 2024–2025, suggesting a recent redesign worsened legibility.</div></div></div><div class="pp-design-link"><span class="pp-dl-label">Current design</span><p>The information hierarchy gives equal visual weight to secondary data (humidity, pressure) and primary data (temperature, condition). Navigation relies on text-only tabs with no clear active state.</p></div></div></details>
+      <details class="pp-card"><summary class="pp-summary"><div class="pp-sum-left"><span class="pp-badge pp-hi">High</span><span class="pp-name">Stale data, no timestamp</span></div><div class="pp-sum-right"><div class="pp-mini-track"><div class="pp-mini-fill" style="width:42%"></div></div><span class="pp-pct">42%</span><svg class="pp-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></summary><div class="pp-body"><div class="pp-sub-list"><div class="pp-sub"><span class="pp-dot pp-dot-hi"></span><div><strong>Shows data from previous days with no indication</strong> — Users discover they've been checking yesterday's forecast without knowing it.</div></div><div class="pp-sub"><span class="pp-dot pp-dot-hi"></span><div><strong>No visible "last updated" time anywhere in the UI</strong> — There's no way to know if the displayed data is 5 minutes or 5 hours old.</div></div></div><div class="pp-design-link"><span class="pp-dl-label">Current design</span><p>The current UI has no persistent timestamp. Combined with the absence of local caching, the app can silently display outdated data while appearing fully functional.</p></div></div></details>
+      <details class="pp-card"><summary class="pp-summary"><div class="pp-sum-left"><span class="pp-badge pp-hi">High</span><span class="pp-name">Inconsistent alerts</span></div><div class="pp-sum-right"><div class="pp-mini-track"><div class="pp-mini-fill" style="width:38%"></div></div><span class="pp-pct">38%</span><svg class="pp-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></summary><div class="pp-body"><div class="pp-sub-list"><div class="pp-sub"><span class="pp-dot pp-dot-crit"></span><div><strong>Extreme heat alerts where temperature is 24°C (72%)</strong> — Province-level alerts fire for areas where the event isn't occurring.</div></div><div class="pp-sub"><span class="pp-dot pp-dot-crit"></span><div><strong>No alert when there should be one — wind, heavy rain (52%)</strong> — Dangerous conditions go unnotified.</div></div></div><div class="pp-design-link"><span class="pp-dl-label">Current design</span><p>Alerts are issued at province level, not GPS-localized — a single province-wide orange alert applies equally to coastal, mountain and inland zones, generating false positives for most users.</p></div></div></details>
+      <details class="pp-card"><summary class="pp-summary"><div class="pp-sum-left"><span class="pp-badge pp-med">Medium</span><span class="pp-name">No push notifications</span></div><div class="pp-sum-right"><div class="pp-mini-track"><div class="pp-mini-fill" style="width:25%"></div></div><span class="pp-pct">25%</span><svg class="pp-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></summary><div class="pp-body"><div class="pp-sub-list"><div class="pp-sub"><span class="pp-dot pp-dot-med"></span><div><strong>Can't configure alerts by event type</strong> — No way to opt in to rain alerts without also receiving heat or wind notifications.</div></div><div class="pp-sub"><span class="pp-dot pp-dot-med"></span><div><strong>No push channel independent of the app</strong> — Receiving an alert requires the app to be open or recently active.</div></div></div><div class="pp-design-link"><span class="pp-dl-label">Current design</span><p>The app has no push notification system. Alerts surface only as in-app banners, which means users who rely on the app as a safety tool receive no proactive communication at all.</p></div></div></details>
+
+      <div class="res-insight">
+        <p class="res-insight-flag">Key finding</p>
+        <p>Most of the critical pain points are <strong>not a data quality problem</strong>. They stem from missing client-layer infrastructure: no background refresh for the widget, no local cache, the radar redirecting to a desktop website. <strong>70% of critical issues are fixable without touching the meteorological backend.</strong></p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- WIREFRAMES -->
+  <div class="case-section">
+    <div class="sec-label">Wireframes</div>
+    <div class="cs-content">
+      <p class="lead-p">A comprehensive wireframe set covering the full app — every screen, every state, every edge case. Each frame is paired with a spec panel documenting state variables, transitions and design rationale.</p>
+      <p class="body-p">The wireframes serve a dual purpose: they are a design artefact and a functional specification. The goal was to resolve all interaction logic before moving to visual design, so that Phase 3 can focus on aesthetics rather than structure.</p>
+
+      <div class="wf-stats">
+        <div class="wf-stat"><span class="wf-stat-num">9</span><span class="wf-stat-label">app modules covered</span></div>
+        <div class="wf-stat"><span class="wf-stat-num">60+</span><span class="wf-stat-label">screens documented</span></div>
+        <div class="wf-stat"><span class="wf-stat-num">9</span><span class="wf-stat-label">avg. states per screen</span></div>
+        <div class="wf-stat"><span class="wf-stat-num">100%</span><span class="wf-stat-label">original functions covered</span></div>
+      </div>
+
+      <!-- FigJam: App flow diagrams -->
+      <p class="res-chart-title" style="margin-bottom:12px;">App flow · 3 key diagrams</p>
+      <div class="figma-embed-wrapper" style="margin-bottom:32px;">
+        <div class="figma-embed-header">
+          <div class="figma-dots"><span class="figma-dot figma-dot--r"></span><span class="figma-dot figma-dot--y"></span><span class="figma-dot figma-dot--g"></span></div>
+          <span class="figma-embed-title">AEMET Research · FigJam — App flow diagrams</span>
+          <a href="https://www.figma.com/board/YPuAWqNZaXxHXJ8Zhth1k1/AEMET--App-flow-diagrams" target="_blank" rel="noopener noreferrer" class="figma-embed-open">Open in FigJam ↗</a>
+        </div>
+        <div class="figma-embed-container" style="height:450px;">
+          <iframe style="border:none;" src="https://embed.figma.com/board/YPuAWqNZaXxHXJ8Zhth1k1/AEMET--App-flow-diagrams?node-id=0-1&embed-host=share" allowfullscreen loading="lazy" title="AEMET — App flow diagrams"></iframe>
+        </div>
+        <p class="figma-embed-note"><strong>Flow 1</strong> — App launch: first use vs. returning user, GPS permission outcomes. &nbsp;·&nbsp; <strong>Flow 2</strong> — Navigation architecture: Bottom Nav as central hub, all screens and sub-screens. &nbsp;·&nbsp; <strong>Flow 3</strong> — Error and degradation states across all main sections. Scroll down inside the frame to explore all three.</p>
+      </div>
+
+      <!-- Figma wireframes -->
+      <div class="figma-embed-wrapper">
+        <div class="figma-embed-header">
+          <div class="figma-dots"><span class="figma-dot figma-dot--r"></span><span class="figma-dot figma-dot--y"></span><span class="figma-dot figma-dot--g"></span></div>
+          <span class="figma-embed-title">Aemet Wireframes · Figma</span>
+          <a href="https://www.figma.com/design/BZgYdTrcD6VyFbbsYPGztO/Aemet-Wireftames?node-id=0-1&t=8p9RqgZEElfyMX58-1" target="_blank" rel="noopener noreferrer" class="figma-embed-open">Abrir en Figma ↗</a>
+        </div>
+        <div class="figma-embed-container">
+          <iframe src="https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fdesign%2FBZgYdTrcD6VyFbbsYPGztO%2FAemet-Wireftames%3Fnode-id%3D0-1%26t%3D8p9RqgZEElfyMX58-1" allowfullscreen loading="lazy" title="Wireframes AEMET — Propuesta de rediseño"></iframe>
+        </div>
+        <p class="figma-embed-note">Usa scroll y zoom dentro del frame para explorar. Las secciones están organizadas por módulo de izquierda a derecha. Cada frame de wireframe tiene un spec panel al lado derecho.</p>
+      </div>
+
+      <p class="wf-index-title">Módulos documentados</p>
+      <div class="wf-index-grid">
+        <div class="wf-module"><span class="wf-module-num">01</span><span class="wf-module-name">Splash Screen</span><span class="wf-module-states">4 estados</span></div>
+        <div class="wf-module"><span class="wf-module-num">02</span><span class="wf-module-name">Onboarding · Permisos</span><span class="wf-module-states">5 estados</span></div>
+        <div class="wf-module"><span class="wf-module-num">04</span><span class="wf-module-name">Main Screen</span><span class="wf-module-states">7 estados</span></div>
+        <div class="wf-module"><span class="wf-module-num">05</span><span class="wf-module-name">Buscador de municipio</span><span class="wf-module-states">7 estados</span></div>
+        <div class="wf-module"><span class="wf-module-num">06</span><span class="wf-module-name">Radar nativo (MapLibre)</span><span class="wf-module-states">9 estados</span></div>
+        <div class="wf-module"><span class="wf-module-num">07</span><span class="wf-module-name">Alertas meteorológicas</span><span class="wf-module-states">6 estados</span></div>
+        <div class="wf-module"><span class="wf-module-num">08</span><span class="wf-module-name">Previsión detallada</span><span class="wf-module-states">4 estados</span></div>
+        <div class="wf-module"><span class="wf-module-num">09</span><span class="wf-module-name">Widget homescreen</span><span class="wf-module-states">6 estados</span></div>
+        <div class="wf-module"><span class="wf-module-num">10</span><span class="wf-module-name">Más · Preferencias</span><span class="wf-module-states">5 pantallas</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="case-footer">
+  <a href="index.html" class="footer-back">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Back to portfolio
+  </a>
+  <span class="footer-meta">Case 04 · Álvaro Martín · In Progress</span>
+</div>
+
+<script>
+(function(){
+  var dot=document.getElementById('cursorDot'),ring=document.getElementById('cursorRing');
+  if(!dot||!ring)return;
+  var mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px';});
+  function animRing(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing);}
+  animRing();
+})();
+(function(){
+  'use strict';
+  document.body.classList.add('cs-anim');
+  var bar=document.getElementById('reading-progress');
+  if(bar){
+    var de=document.documentElement;
+    function upd(){var h=de.scrollHeight-de.clientHeight;bar.style.width=(h>0?de.scrollTop/h*100:0).toFixed(1)+'%';}
+    window.addEventListener('scroll',upd,{passive:true});upd();
+  }
+  var ioCard=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){if(!e.isIntersecting)return;e.target.classList.add('anim-vis');ioCard.unobserve(e.target);});
+  },{threshold:.05,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.case-section').forEach(function(el){ioCard.observe(el);});
+  var ioLabel=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){var lbl=e.target.querySelector(':scope > .sec-label');if(lbl)lbl.classList.toggle('label-active',e.isIntersecting);});
+  },{threshold:.3});
+  document.querySelectorAll('.case-section').forEach(function(el){ioLabel.observe(el);});
+  var ioCB=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){if(!e.isIntersecting)return;e.target.classList.add('cb-vis');ioCB.unobserve(e.target);});
+  },{threshold:.2});
+  document.querySelectorAll('.context-box').forEach(function(el){ioCB.observe(el);});
+})();
+</script>
+</body>
+</html>
